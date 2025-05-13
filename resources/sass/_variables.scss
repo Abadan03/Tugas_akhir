@@ -1,0 +1,38 @@
+@import '~bootstrap/scss/functions';
+
+// Body
+$body-bg: #f8fafc;
+
+// Typography
+$font-family-sans-serif: 'Nunito', sans-serif;
+$font-size-base: 0.9rem;
+$line-height-base: 1.6;
+
+// Custom Colors
+$custom-colors: (
+  "royalpurple": rgb(133, 197, 37),
+  "darkblue": #4609AB,
+  "darkpurple": #5F408F,
+  "lightgreen": #05C92F,
+  "skyblue" : #2B5CC3,
+  "mainbg" : #F0F0F0
+);
+
+
+// Merge Custom Colors ke Bootstrap Colors
+$theme-colors: map-merge(
+  (
+    "primary": #0d6efd,
+    "secondary": #6c757d,
+    "success": #198754,
+    "info": #0dcaf0,
+    "warning": #ffc107,
+    "danger": #dc3545,
+    "light": #f8f9fa,
+    "dark": #212529,
+    "lightblue": #00A2B4,
+    "grey": #6E5C6D,
+    
+  ),
+  $custom-colors
+);
