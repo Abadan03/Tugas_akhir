@@ -24,7 +24,103 @@
 <div class="py-4 px-3">
   <h2 class="fw-bold">Pembayaran</h2>
   <h4 class="fw-semibold mb-4">Keseluruhan Pembayaran</h4>
-
 </div>
+
+<div class="container-fluid d-flex justify-content-between align-items-center">
+  <div>
+    <h1>Inventaris</h1>
+  </div>
+  <div>
+    {{-- <a href="">
+      <button class="btn btn-lightblue text-white ">Laporan kerusakan</button>
+    </a> --}}
+    <a href="">
+      <button class="btn btn-darkblue text-white ">Scan Kode QR</button>
+    </a>
+    <a href="">
+      <button class="btn btn-lightgreen text-white">Import CSV</button>
+    </a>
+    <a href="">
+      <button class="btn btn-grey text-white">Download All</button>
+    </a>
+  </div>
+</div>
+
+<div class="container-fluid">
+  <table id="example" class="table table-striped" style="width:100%">
+    <thead>
+        <tr>
+            <th>Nama Barang</th>
+            {{-- <th>Id barang</th> --}}
+            <th>Kategori</th>
+            <th>Nama Siswa</th>
+            <th>Tipe</th>
+            <th>Status</th>
+            <th>Keterangan</th>
+            {{-- <th>Harga Perbaikan</th> --}}
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+      @foreach ($data as $item)
+      <tr>
+          <td>{{ $item->barang->nama_barang }}</td>
+          <td>
+          @if ($item->barang && $item->barang->kategori == 1)
+           Dipinjam oleh siswa
+          @elseif ($item->barang && $item->barang->kategori == 0)
+              Milik Sekolah
+          @endif
+          </td>
+          @if ($item->barang->nama_siswa)
+            <td>
+              {{ $item->barang->nama_siswa }}
+            </td>
+          @else
+            <td>
+              -
+            </td>
+          @endif
+          <td>
+          @if ($item->barang->tipe == 0)
+            Barang Tetap
+          @elseif ($item->barang->tipe == 1)
+            Barang Berpindah
+          @endif
+          </td>
+          <td>
+          @if ($item->barang->status == 0)
+            Baru
+          @elseif ($item->barang->status = 1)
+            Hilang
+          @elseif ($item->barang->status = 2)
+            Rusak Ringan
+          @elseif ($item->barang->status = 3)
+            Rusak
+          @endif
+          </td>
+          <td>{{ $item->barang->keterangan }}</td>
+          {{-- <td>{{ $item->harga }}</td> --}}
+          <td class="d-flex gap-2">
+              {{-- <a href="{{ route('peminjaman.details', $pembayaran->id) }}" class="text-black">
+                  <i class="bi bi-eye"></i>
+              </a> --}}
+              <form action="{{ route('pembayaran.destroy', $item->id) }}" method="POST">
+                  @csrf
+                  @method('DELETE')
+                  <button type="submit" style="border: none; background: none;" class="text-black">
+                      <i class="bi bi-trash"></i>
+                  </button>
+              </form>
+              <a href="{{ route('pembayaran.edit', $item->id) }}" class="text-black">
+                  <i class="bi bi-pencil-square"></i>
+              </a>
+          </td>
+      </tr>
+      @endforeach
+    </tbody>
+  </table>
+</div>
+
 
 @endsection

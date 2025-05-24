@@ -33,79 +33,83 @@
   <form action="{{ route('peminjaman.update', $barang->id) }}" method="POST" enctype="multipart/form-data" class="p-4 bg-white">
     @csrf
     @method('PUT')
-    <div class="mb-3">
-      <label for="nama_barang" class="form-label">Nama Barang<span class="text-danger">*</span></label>
-      <input type="text" class="form-control" id="nama_barang" name="nama_barang" value="{{ $barang->nama_barang }}" required disabled>
-    </div>
-  
-    <div class="mb-3">
-      <label for="kategori" class="form-label">Kategori <span class="text-danger">*</span></label>
-      <select class="form-select" id="kategori" name="kategori" required disabled>
-        <option value="milik" {{ $barang->kategori == 'milik' ? 'selected' : '' }}>Milik Sekolah</option>
-        <option value="dipinjam" {{ $barang->kategori == 'dipinjam' ? 'selected' : '' }}>Dipinjam oleh siswa</option>
-      </select>
-    </div>
+    {{-- @if ($barang->status == 0) --}}
+      {{-- <h1>assd</h1> --}}
+      <div class="mb-3">
+        <label for="nama_barang" class="form-label">Nama Barang<span class="text-danger">*</span></label>
+        <input type="text" class="form-control" id="nama_barang_display" name="nama_barang_display" value="{{ $barang->nama_barang }}" required disabled>
+        <input type="hidden" class="form-control" id="nama_barang" name="nama_barang" value="{{ $barang->nama_barang }}">
+      </div>
+    
+      <div class="mb-3">
+        <label for="kategori" class="form-label">Kategori <span class="text-danger">*</span></label>
+        <select class="form-select" id="kategori_display" name="kategori_display" required disabled>
+          <option value="0" {{ $barang->kategori == 0 ? 'selected' : '' }}>Milik Sekolah</option>
+          <option value="1" {{ $barang->kategori == 1 ? 'selected' : '' }}>Dipinjam oleh siswa</option>
+        </select>
+        <input type="hidden" name="kategori" id="kategori" value="{{ $barang->kategori }}">
+      </div>
 
-    <div class="mb-3 d-none" id="field-nama-siswa">
-      <label for="nama_siswa" class="form-label">Nama Siswa <span class="text-danger">*</span></label>
-      <input type="text" class="form-control" id="nama_siswa" name="nama_siswa" value="{{ $barang->nama_siswa }}">
-    </div>
-  
-    <div class="mb-3">
-      <label for="tipe" class="form-label">Tipe <span class="text-danger">*</span></label>
-      <select class="form-select" id="tipe" name="tipe" required disabled>
-        <option value="barang berpindah" {{ $barang->tipe == 'barang berpindah' ? 'selected' : '' }}>Barang berpindah</option>
-        <option value="barang tetap" {{ $barang->tipe == 'barang tetap' ? 'selected' : '' }}>Barang tetap</option>
-      </select>
-    </div>
-  
-    <div class="mb-3">
-      <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
-      <select class="form-select" id="status" name="status" required>
-        <option value="Baru" {{ $barang->status == 'Baru' ? 'selected' : '' }}>Baru</option>
-        <option value="Hilang" {{ $barang->status == 'Hilang' ? 'selected' : '' }}>Hilang</option>
-        <option value="Rusak ringan" {{ $barang->status == 'Rusak ringan' ? 'selected' : '' }}>Rusak ringan</option>
-        <option value="Rusak" {{ $barang->status == 'Rusak' ? 'selected' : '' }}>Rusak</option>
-      </select>
-    </div>
+      <div class="mb-3 d-none" id="field-nama-siswa">
+        <label for="nama_siswa" class="form-label">Nama Siswa <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" id="nama_siswa" name="nama_siswa" value="{{ $barang->nama_siswa }}">
+      </div>
+    
+      <div class="mb-3">
+        <label for="tipe" class="form-label">Tipe <span class="text-danger">*</span></label>
+        <select class="form-select" id="tipe_display" name="tipe_display" required disabled>
+          <option value="1" {{ $barang->tipe == 1 ? 'selected' : '' }}>Barang berpindah</option>
+          <option value="0" {{ $barang->tipe == 0 ? 'selected' : '' }}>Barang tetap</option>
+        </select>
+        <input type="hidden" name="tipe" id="tipe" value="{{ $barang->tipe }}">
+      </div>
+    
+      <div class="mb-3">
+        <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
+        <select class="form-select" id="status" name="status" required>
+          <option value="0" {{ $barang->status == 0 ? 'selected' : '' }}>Baru</option>
+          <option value="1" {{ $barang->status == 1 ? 'selected' : '' }}>Hilang</option>
+          <option value="2" {{ $barang->status == 2 ? 'selected' : '' }}>Rusak ringan</option>
+          <option value="3" {{ $barang->status == 3 ? 'selected' : '' }}>Rusak</option>
+        </select>
+      </div>
 
-    <div class="mb-3 d-none" id="field-keterangan">
-      <label for="keterangan" class="form-label">Keterangan <span class="text-danger">*</span></label>
-      <textarea name="keterangan" id="keterangan" cols="30" rows="4" class="form-control"></textarea>
-      {{-- <input type="textarea" class="form-control" id="keterangan" name="keterangan"> --}}
-    </div>
-  
-    <div class="mb-3 d-none" id="field-surat">
-      <label for="surat" class="form-label">Keterangan jika dalam bentuk surat</label>
-      <input type="file" class="form-control" id="surat" name="surat">
-    </div>
-  
-    <div class="mb-3">
-      <label for="harga" class="form-label">Harga Awal <span class="text-danger">*</span></label>
-      <input type="number" class="form-control" name="harga_awal" id="harga" value="{{ $barang->harga_awal }}" required disabled>
-    </div>
-  
-    <div class="mb-3">
-      <label class="form-label">Kode QR</label>
-      <input type="text" class="form-control" name="kodeQR" value="{{ $barang->kodeQR }}" readonly>
-    </div>
-  
-    <div class="mb-3">
-      <label for="bukti" class="form-label">Bukti Pembelian :</label>
-      @if($barang->bukti)
-        <p><a href="{{ asset('storage/' . $barang->bukti) }}" target="_blank">Lihat Bukti</a></p>
-      @else
-        <p class="fs-6 text-danger"><span>* </span>Admin belum memasukkan bukti pembelian</p>
-        <input type="file" class="form-control" id="bukti" name="bukti">
-      @endif
-    </div>
-  
-    <div class="d-flex justify-content-end gap-2 mt-4">
-      <a href="{{ route('peminjaman.index') }}">
-        <button type="button" class="btn btn-danger">Batal</button>
-      </a>
-      <button type="submit" class="btn btn-success">Simpan</button>
-    </div>
+      <div id="keterangan_container">
+        
+      </div>
+    
+      
+      <div id="surat_container">
+
+      </div>
+    
+      <div class="mb-3">
+        <label for="harga" class="form-label">Harga Awal <span class="text-danger">*</span></label>
+        <input type="number" class="form-control" name="harga_display" id="harga_display" value="{{ $barang->harga_awal }}" required>
+        <input type="hidden" class="form-control" name="harga_awal" id="harga_awal" value="{{ $barang->harga_awal }}">
+      </div>
+    
+      <div class="mb-3">
+        <label class="form-label">Kode QR</label>
+        <input type="text" class="form-control" name="kodeQR" value="{{ $barang->kodeQR }}" readonly>
+      </div>
+    
+      <div class="mb-3 ">
+        <label for="bukti" class="form-label">Bukti Pembelian :</label>
+        @if($barang->bukti)
+          <p><a href="{{ asset('storage/' . $barang->bukti) }}" target="_blank">Lihat Bukti</a></p>
+        @else
+          <p class="fs-6 text-danger"><span>* </span>Admin belum memasukkan bukti pembelian</p>
+          <input type="file" class="form-control" id="bukti" name="bukti">
+        @endif
+      </div>
+    
+      <div class="d-flex justify-content-end gap-2 mt-4">
+        <a href="{{ route('peminjaman.index') }}">
+          <button type="button" class="btn btn-danger">Batal</button>
+        </a>
+        <button type="submit" class="btn btn-success">Simpan</button>
+      </div>
   </form>
 </div>
 
@@ -113,31 +117,49 @@
 
 @push('scripts')
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const statusSelect = document.getElementById('status');
-    const keteranganField = document.getElementById('field-keterangan');
-    const keteranganInput = document.getElementById('keterangan');
 
-    const suratField = document.getElementById('field-surat');
-    const suratInput = document.getElementById('surat');
+  // $("#status").change(function() {
+  //   if ($(this).val() == "1") {
+  //     $("#keterangan_container").show();
+  //     $("#field-keterangan").removeClass("d-none");
+  //   } else {
+  //     $("#keterangan_container").hide();
+  //     $("#field-keterangan").addClass("d-none");
+  //   }
+  // });
 
-    function toggleStatus() {
-      if (statusSelect.value !== 'Baru') {
-        keteranganField.classList.remove('d-none');
-        keteranganInput.required = true;
-        suratField.classList.remove('d-none');
+    document.getElementById("status").addEventListener("change", function () {
+      const statusValue = this.value;
+      const keteranganContainer = document.getElementById("keterangan_container");
+      const suratContainer = document.getElementById("surat_container");
+      //  <p><a href="{{ asset('storage/' . $barang->bukti) }}" target="_blank">Lihat Bukti</a></p>
+
+      // Clear the container first
+      keteranganContainer.innerHTML = "";
+      suratContainer.innerHTML = "";
+
+      if (statusValue != "0") {
+        // Append the HTML if status is 1
+        keteranganContainer.innerHTML = `
+          <div class="mb-3" id="field-keterangan">
+            <label for="keterangan" class="form-label">Keterangan <span class="text-danger">*</span></label>
+            <textarea name="keterangan" id="keterangan" cols="30" rows="4" class="form-control"></textarea>
+          </div>
+        `;
+        
+        suratContainer.innerHTML = `
+          <div class="mb-3" id="field-surat">
+            <label for="surat" class="form-label">Keterangan jika dalam bentuk surat</label>
+            <input type="file" class="form-control" id="surat" name="surat">
+          </div>
+        `;
       }
-       else {
-        keteranganField.classList.add('d-none');
-        keteranganInput.required = false;
-        keteranganInput.value = '';
-      }
+    });
 
-      // if statusSelect.value !== 'Baru' 
-    }
 
-    statusSelect.addEventListener('change', toggleStatus);
-    toggleStatus();
-  });
+
+
+
+  // document.addEv
 </script>
 @endpush

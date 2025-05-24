@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 
 use App\Models\Barang;
 use App\Models\Pinjaman;
+use App\Models\BarangRusak;
 
 
 class InventoryController extends Controller
@@ -22,7 +23,8 @@ class InventoryController extends Controller
     public function index()
     {
         //
-        $data = Barang::all(); // ambil semua data
+        // $data = Barang::where('status', 0)->get();
+        $data = Barang::all();
         return view('admin.inventory.index', compact('data')); // kirim ke view
     }
 
@@ -77,7 +79,7 @@ class InventoryController extends Controller
         $barang->bukti = $path;
         $barang->save();
 
-        if ($request->kategori === 'dipinjam') {
+        if ($request->kategori ==  1) {
             Pinjaman::create([
                 // 'user_id' => $request->user_id,
                 'barang_id' => $barang->id,
@@ -111,7 +113,11 @@ class InventoryController extends Controller
     {
         //
         $barang = Barang::findOrFail($id);
-        return view('admin.inventory.edit', compact('barang'));
+        $barangRusaks = BarangRusak::with('barang')->get();
+
+        $barangRusakIds = BarangRusak::pluck('barang_id');
+        $data = Barang::whereIn('id', $barangRusakIds)->get();
+        return view('admin.inventory.edit', compact('barang', 'barangRusaks'));
     }
 
     /**
@@ -121,42 +127,71 @@ class InventoryController extends Controller
     {
         $barang = Barang::findOrFail($id);
 
-    $validatedData = $request->validate([
-        'nama_barang' => 'required|string|max:255',
-        'kategori' => 'required|string|max:255',
-        'tipe' => 'required|string|max:255',
-        'status' => 'required|string|max:255',
-        'harga_awal' => 'required|numeric',
-        'kodeQR' => 'required|string|max:255',
-        'bukti' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
-    ]);
+        $validatedData = $request->validate([
+            'nama_barang' => 'required|string|max:255',
+            'kategori' => 'required|string|max:255',
+            'tipe' => 'required|string|max:255',
+            'status' => 'required|string|max:255',
+            'harga_awal' => 'required|numeric',
+            'kodeQR' => 'required|string|max:255',
+            'bukti' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'surat' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+        ]);
 
-    $barang->nama_barang = $request->nama_barang;
-    $barang->kategori = $request->kategori;
-    $barang->tipe = $request->tipe;
-    $barang->status = $request->status;
-    $barang->harga_awal = $request->harga_awal;
-    $barang->kodeQR = $request->kodeQR;
+        $barang->nama_barang = $request->nama_barang;
+        $barang->kategori = $request->kategori;
+        $barang->tipe = $request->tipe;
+        $barang->status = $request->status;
+        $barang->harga_awal = $request->harga_awal;
+        // $barang->kodeQR = $request->kodeQR;
 
-    // Handle file upload
-    if ($request->hasFile('bukti')) {
-        // Hapus file lama jika ada
-        if ($barang->bukti && Storage::disk('public')->exists($barang->bukti)) {
-            Storage::disk('public')->delete($barang->bukti);
+        if ($request->hasFile('surat')) {
+            $path = null;
+            $file = $request->file('surat');
+            $imagePath = Storage::disk('public')->put('surat', $file);
+
+            $path = $file->storeAs(
+                'images', // Direktori target di disk 'public'
+                $file->getClientOriginalName(), // Nama file asli
+                'public' // Disk 'public'
+            ); 
         }
 
-        $file = $request->file('bukti');
-        $path = $file->storeAs(
-            'images',
-            $file->getClientOriginalName(),
-            'public'
-        );
-        $barang->bukti = $path;
-    }
+        // Handle file upload
+        if ($request->hasFile('bukti')) {
+            // Hapus file lama jika ada
+            if ($barang->bukti && Storage::disk('public')->exists($barang->bukti)) {
+                Storage::disk('public')->delete($barang->bukti);
+            }
 
-    $barang->save();
+            $file = $request->file('bukti');
+            $path = $file->storeAs(
+                'images',
+                $file->getClientOriginalName(),
+                'public'
+            );
+            $barang->bukti = $path;
+        }
 
-    return redirect()->route('inventaris.index')->with('success', 'Data barang berhasil diperbarui');
+        if ($request->status !== 0 && $path) {
+            BarangRusak::create([
+                'barang_id' => $id,
+                'pinjaman_id' => null,
+                'surat' => $path,
+            ]);
+
+            $barang = Barang::findOrFail($id);
+
+            $barang->status = $request->status;
+            $barang->keterangan = $request->keterangan;
+            $barang->save();
+
+
+        }
+
+        // $barang->save();
+
+        return redirect()->route('inventaris.index')->with('success', 'Data barang berhasil diperbarui');
 
     }
 

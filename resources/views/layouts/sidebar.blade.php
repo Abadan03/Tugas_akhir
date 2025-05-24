@@ -69,7 +69,7 @@
         <i class="bi bi-journal-arrow-up"></i>
         <span>Peminjaman</span>
       </a>
-      <a href="{{ route('pembayaran') }}"
+      <a href="{{ route('pembayaran.index') }}"
         class="nav-link d-flex align-items-center gap-2 py-3 {{ request()->is('pembayaran*') ? 'active bg-success text-white' : 'text-dark' }}">
         <i class="bi bi-receipt"></i>
         <span>Pembayaran</span>

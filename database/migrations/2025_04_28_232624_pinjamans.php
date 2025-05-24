@@ -15,8 +15,12 @@ return new class extends Migration
         Schema::create('pinjamans', function (Blueprint $table) {
             $table->id();
             // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            // $table->unsignedBigInteger('barang_id');
+            // $table->foreignId('barang_id')->constrained('barangs')->onDelete('cascade');
             $table->foreignId('barang_id')->constrained('barangs')->onDelete('cascade');
             $table->timestamps();
+
+            // $table->foreign('barang_id')->on('barangs')->onDelete('cascade');
         });
     }
 

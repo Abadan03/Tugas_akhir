@@ -22,6 +22,7 @@ class LoanController extends Controller
     {
         //
         $data = Pinjaman::with('barang')->get();
+        // $keterangan = BarangRusak::findOrFail();
         // return dd($data);
 
         return view('admin.loan.index', compact('data'));
@@ -73,26 +74,58 @@ class LoanController extends Controller
     {
         //
         $input = $request->all();
-        $validator = Validator::make($input, [
+
+        // if($request->)
+        $validator = $request->validate([
             'nama_barang' => 'required|string|max:255',
             'kategori' => 'required|string|max:255',
             'tipe' => 'required|string|max:255',
             'status' => 'required|string|max:255',
             'harga_awal' => 'required|numeric',
             'kodeQR' => 'required|string|max:255',
-            'bukti' => 'file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'keterangan' => 'required|string|max:255',
+            // 'bukti' => 'file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'surat' => 'file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
+        // return dd($request->all(), $request->file('surat'));
+        // return dd($request->$id);
+        // Log::info('ini data', [$request->surat]);
 
+        $path = null;
+        if ($request->hasFile('surat')) {
+            $file = $request->file('surat');
+            $imagePath = Storage::disk('public')->put('surat', $file);
+
+            $path = $file->storeAs(
+                'images', // Direktori target di disk 'public'
+                $file->getClientOriginalName(), // Nama file asli
+                'public' // Disk 'public'
+            ); 
+        }
         
-        // $create_barangrusak = new BarangRusak();
-        
-        if ($request->status !== "Baik") {
+        if ($request->status !== 0 && $path) {
             BarangRusak::create([
                 'barang_id' => $id,
                 'pinjaman_id' => $id,
-                'keterangan' => $request->keterangan,
+                // 'keterangan' => $request->keterangan,
+                'surat' => $path,
             ]);
+
+            $barang = Barang::findOrFail($id);
+
+            $barang->status = $request->status;
+            $barang->keterangan = $request->keterangan;
+            $barang->save();
+
+            // if($barang) {
+            //     $barang->keterangan = $request->keterangan;
+            //     $barang->save();
+            // }
         }
+
+        // Barang::create()
+
+        return redirect()->route('peminjaman.index')->with('success', 'Update status telah dibarui' . $path);
 
     }
 

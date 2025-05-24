@@ -1,3 +1,7 @@
+@php
+  $suratPath = count($barangRusaks) > 0 && $barangRusaks[0]->surat ? asset('storage/' . $barangRusaks[0]->surat) : '';
+@endphp
+
 @extends('layouts.app')
 
 @section('content')
@@ -32,69 +36,92 @@
   <form action="{{ route('inventaris.update', $barang->id) }}" method="POST" enctype="multipart/form-data" class="p-4 bg-white">
     @csrf
     @method('PUT')
-  
-    <div class="mb-3">
-      <label for="nama_barang" class="form-label">Nama Barang<span class="text-danger">*</span></label>
-      <input type="text" class="form-control" id="nama_barang" name="nama_barang" value="{{ $barang->nama_barang }}" required>
-    </div>
-  
-    <div class="mb-3">
-      <label for="kategori" class="form-label">Kategori <span class="text-danger">*</span></label>
-      <select class="form-select" id="kategori" name="kategori" required>
-        <option value="milik" {{ $barang->kategori == 'milik' ? 'selected' : '' }}>Milik Sekolah</option>
-        <option value="dipinjam" {{ $barang->kategori == 'dipinjam' ? 'selected' : '' }}>Dipinjam oleh siswa</option>
-      </select>
-    </div>
+      <div class="mb-3">
+        <label for="nama_barang" class="form-label">Nama Barang<span class="text-danger">*</span></label>
+        <input type="text" class="form-control" id="nama_barang" name="nama_barang" value="{{ $barang->nama_barang }}" required>
+      </div>
+    
+      <div class="mb-3">
+        <label for="kategori" class="form-label">Kategori <span class="text-danger">*</span></label>
+        <select class="form-select" id="kategori" name="kategori" required>
+          <option value="0" {{ $barang->kategori == '0' ? 'selected' : '' }}>Milik Sekolah</option>
+          <option value="1" {{ $barang->kategori == '1' ? 'selected' : '' }}>Dipinjam oleh siswa</option>
+        </select>
+      </div>
+      {{-- @if ($barang->status != 0) --}}
+      <div id="nama_siswa_container"  data-namasiswa="{{ old('namasiswa', $barang->nama_siswa ?? '') }}">
+        {{-- <div class="mb-3 d-none" id="field-nama-siswa">
+          <label for="nama_siswa" class="form-label">Nama Siswa <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" id="nama_siswa" name="nama_siswa" value="">
+        </div> --}}
+      </div>
+      {{-- @foreach($barangRusaks as $items)
+      <div class="mb-3 d-none" id="field-nama-siswa">
+        <label for="nama_siswa" class="form-label">Nama Siswa <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" id="nama_siswa" name="nama_siswa" value="{{ $items->barang->nama_siswa }}">
+      </div>
+      @endforeach --}}
 
-    <div class="mb-3 d-none" id="field-nama-siswa">
-      <label for="nama_siswa" class="form-label">Nama Siswa <span class="text-danger">*</span></label>
-      <input type="text" class="form-control" id="nama_siswa" name="nama_siswa" value="{{ $barang->nama_siswa }}">
-    </div>
+      {{-- {{ $barang->nama_siswa }} --}}
+
+      {{-- @endif --}}
+      {{-- test --}}
+    
+      <div class="mb-3">
+        <label for="tipe" class="form-label">Tipe <span class="text-danger">*</span></label>
+        <select class="form-select" id="tipe" name="tipe" required>
+          <option value="1" {{ $barang->tipe == 1 ? 'selected' : '' }}>Barang berpindah</option>
+          <option value="0" {{ $barang->tipe == 0 ? 'selected' : '' }}>Barang tetap</option>
+        </select>
+      </div>
+      
+      <div class="mb-3">
+        <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
+        <select class="form-select" id="status" name="status" required >
+          <option value="0" {{ $barang->status == '0' ? 'selected' : '' }}>Baru</option>
+          <option value="1" {{ $barang->status == '1' ? 'selected' : '' }}>Hilang</option>
+          <option value="2" {{ $barang->status == '2' ? 'selected' : '' }}>Rusak ringan</option>
+          <option value="3" {{ $barang->status == '3' ? 'selected' : '' }}>Rusak</option>
+        </select>
+      </div>
+
+      <div id="keterangan_container" >
+      
+      </div>
+      {{-- {{ asset('storage', $items->surat) }} --}}
+      {{-- @foreach($barangRusaks as $data) --}}
+      <div id="surat_container" >
   
-    <div class="mb-3">
-      <label for="tipe" class="form-label">Tipe <span class="text-danger">*</span></label>
-      <select class="form-select" id="tipe" name="tipe" required>
-        <option value="barang berpindah" {{ $barang->tipe == 'barang berpindah' ? 'selected' : '' }}>Barang berpindah</option>
-        <option value="barang tetap" {{ $barang->tipe == 'barang tetap' ? 'selected' : '' }}>Barang tetap</option>
-      </select>
-    </div>
-  
-    <div class="mb-3">
-      <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
-      <select class="form-select" id="status" name="status" required>
-        <option value="Baru" {{ $barang->status == 'Baru' ? 'selected' : '' }}>Baru</option>
-        <option value="Hilang" {{ $barang->status == 'Hilang' ? 'selected' : '' }}>Hilang</option>
-        <option value="Rusak ringan" {{ $barang->status == 'Rusak ringan' ? 'selected' : '' }}>Rusak ringan</option>
-        <option value="Rusak" {{ $barang->status == 'Rusak' ? 'selected' : '' }}>Rusak</option>
-      </select>
-    </div>
-  
-    <div class="mb-3">
-      <label for="harga" class="form-label">Harga Awal <span class="text-danger">*</span></label>
-      <input type="number" class="form-control" name="harga_awal" id="harga" value="{{ $barang->harga_awal }}" required>
-    </div>
-  
-    <div class="mb-3">
-      <label class="form-label">Kode QR</label>
-      <input type="text" class="form-control" name="kodeQR" value="{{ $barang->kodeQR }}" readonly>
-    </div>
-  
-    <div class="mb-3">
-      <label for="bukti" class="form-label">Bukti Pembelian :</label>
-      @if($barang->bukti)
-        <p><a href="{{ asset('storage/' . $barang->bukti) }}" target="_blank">Lihat Bukti</a></p>
-      @else
-        <p class="fs-6 text-danger"><span>* </span>Admin belum memasukkan bukti pembelian</p>
-        <input type="file" class="form-control" id="bukti" name="bukti">
-      @endif
-    </div>
-  
-    <div class="d-flex justify-content-end gap-2 mt-4">
-      <a href="{{ route('inventaris.index') }}">
-        <button type="button" class="btn btn-danger">Batal</button>
-      </a>
-      <button type="submit" class="btn btn-success">Simpan</button>
-    </div>
+      </div>
+      {{-- @endforeach --}}
+
+      <div class="mb-3">
+        <label for="harga" class="form-label">Harga Awal <span class="text-danger">*</span></label>
+        <input type="number" class="form-control" name="harga_awal" id="harga" value="{{ $barang->harga_awal }}" required>
+      </div>
+    
+      <div class="mb-3">
+        <label class="form-label">Kode QR</label>
+        <input type="text" class="form-control" name="kodeQR" value="{{ $barang->kodeQR }}" readonly>
+      </div>
+    
+      <div class="mb-3">
+        <label for="bukti" class="form-label">Bukti Pembelian :</label>
+        @if($barang->bukti)
+          <p><a href="{{ asset('storage/' . $barang->bukti) }}" target="_blank">Lihat Bukti</a></p>
+        @else
+          <p class="fs-6 text-danger"><span>* </span>Admin belum memasukkan bukti pembelian</p>
+          <input type="file" class="form-control" id="bukti" name="bukti">
+        @endif
+      </div>
+    
+      <div class="d-flex justify-content-end gap-2 mt-4">
+        <a href="{{ route('inventaris.index') }}">
+          <button type="button" class="btn btn-danger">Batal</button>
+        </a>
+        <button type="submit" class="btn btn-success">Simpan</button>
+      </div>
+    
   </form>
 </div>
 
@@ -102,24 +129,64 @@
 
 @push('scripts')
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const kategoriSelect = document.getElementById('kategori');
-    const namaSiswaField = document.getElementById('field-nama-siswa');
-    const namaSiswaInput = document.getElementById('nama_siswa');
+  document.addEventListener("DOMContentLoaded", function () {
+    const statusElement = document.getElementById("status");
+    const kategoriElement = document.getElementById("kategori");
+    const keteranganContainer = document.getElementById("keterangan_container");
+    const suratContainer = document.getElementById("surat_container");
+    const NamaSiswaContainer = document.getElementById('nama_siswa_container');
+    // namaSiswa
+    // Ambil data keterangan dari atribut data-keterangan
+    const savedKeterangan = keteranganContainer.dataset.keterangan;
+    const savedSurat = suratContainer.dataset.surat;
+    const savedNamaSiswa = NamaSiswaContainer.dataset.namasiswa
+    // namaSiswa
+    // const statusValue = statusElement.value;
 
-    function toggleNamaSiswa() {
-      if (kategoriSelect.value === 'dipinjam') {
-        namaSiswaField.classList.remove('d-none');
-        namaSiswaInput.required = true;
-      } else {
-        namaSiswaField.classList.add('d-none');
-        namaSiswaInput.required = false;
-        namaSiswaInput.value = '';
+    // console.log("Image source is:", savedNamaSiswa);
+    
+    
+    function updateFields() {
+      const statusValue = statusElement.value;
+      const kategoriValue = kategoriElement.value;
+      keteranganContainer.innerHTML = "";
+      suratContainer.innerHTML = "";
+      // namasiswa
+      // if(kategoriValue != 0 && savedNamaSiswa) {
+
+      //   NamaSiswaContainer.innerHTML = `
+      //     <div class="mb-3">
+      //       <label for="nama_siswa" class="form-label">Nama Siswa <span class="text-danger">*</span></label>
+      //       <input type="text" class="form-control" id="nama_siswa" name="nama_siswa" value="${savedNamaSiswa}">
+      //     </div>
+      //   `;
+      // }
+
+      if (statusValue !== "0") {
+        // NamaSiswa.
+        keteranganContainer.innerHTML = `
+          <div class="mb-3" id="field-keterangan">
+            <label for="keterangan" class="form-label">Keterangan <span class="text-danger">*</span></label>
+            <textarea name="keterangan" id="keterangan" cols="30" rows="4" class="form-control" required></textarea>
+          </div>
+        `;
+
+        suratContainer.innerHTML = `
+          <div class="mb-3 d-flex flex-column" id="field-surat">
+            <label for="surat" class="form-label">Jika dalam bentuk surat</label>
+            <input type="file" id="surat" name="surat">
+          </div>
+        `;
+
+        
       }
     }
 
-    kategoriSelect.addEventListener('change', toggleNamaSiswa);
-    toggleNamaSiswa(); // trigger saat load pertama kali
+    // Inisialisasi saat halaman dimuat
+    updateFields();
+
+    // Update saat status berubah
+    statusElement.addEventListener("change", updateFields);
   });
 </script>
 @endpush

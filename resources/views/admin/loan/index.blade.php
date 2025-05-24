@@ -29,7 +29,7 @@
 {{-- Buttons menu --}}
 <div class="container-fluid d-flex justify-content-between align-items-center">
   <div>
-    <h1>Inventaris</h1>
+    <h1>Peminjaman</h1>
   </div>
   <div>
     {{-- <a href="">
@@ -52,7 +52,6 @@
     <thead>
         <tr>
             <th>Nama barang</th>
-            {{-- <th>Id barang</th> --}}
             <th>Kategori</th>
             <th>Nama Siswa</th>
             <th>Tipe</th>
@@ -62,20 +61,37 @@
     </thead>
     <tbody>
       @foreach ($data as $item)
+      {{-- @if ($item->barang->status === "Baru") --}}
       <tr>
           <td>{{ $item->barang->nama_barang }}</td>
           <td>
-            @if ($item->barang && $item->barang->kategori === "dipinjam")
+            @if ($item->barang && $item->barang->kategori == 1)
               Dipinjam oleh siswa
-            @elseif ($item->barang && $item->barang->kategori === "milik")
+            @elseif ($item->barang && $item->barang->kategori == 0)
               Milik Sekolah
             @endif
           </td>
           <td>
             {{ $item->barang->nama_siswa }}
           </td>
-          <td>{{ $item->barang->tipe }}</td>
-          <td>{{ $item->barang->status }}</td>
+          <td>
+            @if ($item->tipe == 0)
+              Barang Tetap
+            @elseif ($item->tipe == 1)
+              Barang Berpindah
+            @endif
+          </td>
+          <td>
+            @if ($item->status == 0)
+              Baru
+            @elseif ($item->status == 1)
+              Hilang
+            @elseif ($item->status == 2)
+              Rusak Ringan
+            @elseif ($item->status == 3)
+              Rusak
+            @endif
+          </td>
           <td class="d-flex gap-2">
               {{-- <a href="{{ route('peminjaman.details', $item->id) }}" class="text-black">
                   <i class="bi bi-eye"></i>
@@ -92,6 +108,7 @@
               </a>
           </td>
       </tr>
+      {{-- @endif --}}
       @endforeach
     </tbody>
   </table>

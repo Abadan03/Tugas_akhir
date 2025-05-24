@@ -12,8 +12,9 @@ class BarangRusak extends Model
     protected $fillable = [
         'barang_id',
         'pinjaman_id',
-        'biaya_perbaikan',
-        'keterangan',
+        // 'biaya_perbaikan',
+        // 'keterangan',
+        'surat',
     ];
 
     public function barang()

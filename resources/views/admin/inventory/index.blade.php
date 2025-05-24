@@ -65,14 +65,30 @@
       <tr>
           <td>{{ $item->nama_barang }}</td>
           <td>
-            @if ($item->kategori === "dipinjam")
+            @if ($item->kategori == 1)
               Dipinjam oleh siswa
-            @elseif ($item->kategori === "milik")
+            @elseif ($item->kategori == 0)
               Milik Sekolah
             @endif
           </td>
-          <td>{{ $item->tipe }}</td>
-          <td>{{ $item->status }}</td>
+          <td>
+            @if ($item->tipe == 0)
+              Barang Tetap
+            @elseif ($item->tipe == 1)
+              Barang Berpindah
+            @endif
+          </td>
+          <td>
+            @if ($item->status == 0)
+              Baru
+            @elseif ($item->status == 1)
+              Hilang
+            @elseif ($item->status == 2)
+              Rusak Ringan
+            @elseif ($item->status == 3)
+              Rusak
+            @endif
+          </td>
           <td class="d-flex gap-2">
               <a href="{{ route('inventaris.details', $item->id) }}" class="text-black">
                   <i class="bi bi-eye"></i>
@@ -84,9 +100,11 @@
                       <i class="bi bi-trash"></i>
                   </button>
               </form>
-              <a href="{{ route('inventaris.edit', $item->id) }}" class="text-black">
-                  <i class="bi bi-pencil-square"></i>
-              </a>
+              @if ($item->status == 0 && $item->kategori != 1)
+                  <a href="{{ route('inventaris.edit', $item->id) }}" class="text-black">
+                      <i class="bi bi-pencil-square"></i>
+                  </a>
+              @endif
           </td>
       </tr>
       @endforeach

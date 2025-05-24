@@ -26,7 +26,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route::get('/peminjaman', [LoanController::class, 'index'])->name('peminjaman');
     Route::resource('peminjaman', LoanController::class);
 
-    Route::get('/pembayaran', [PaymentController::class, 'index'])->name('pembayaran');
+    // Route::get('/pembayaran', [PaymentController::class, 'index'])->name('pembayaran');
+    Route::resource('pembayaran', PaymentController::class);
 
     Route::post('/logout', [RegisterController::class, 'logout'])->name('logout');
 });

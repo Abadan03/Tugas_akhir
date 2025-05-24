@@ -36,14 +36,14 @@
       <div>
         <h6 class="fw-semibold mb-1">Kategori :</h6>
         <p class="fw-light">
-          @if ($barang->kategori === "dipinjam")
+          @if ($barang->kategori == 1)
               Dipinjam oleh siswa
-            @elseif ($barang->kategori === "milik")
+            @elseif ($barang->kategori == 0)
               Milik Sekolah
             @endif
         </p>
       </div>
-      @if ($barang->kategori == "dipinjam")
+      @if ($barang->kategori == 1)
         <div>
           <h6 class="fw-semibold mb-1">Nama Siswa :</h6>
           <p class="fw-light">{{ $barang->nama_siswa }}</p>
@@ -51,7 +51,13 @@
       @endif
       <div>
         <h6 class="fw-semibold mb-1">Tipe :</h6>
-        <p class="fw-light">{{ $barang->tipe }}</p>
+        <p class="fw-light">
+          @if ($barang->tipe == 0)
+            Barang Tetap
+          @elseif ($barang->tipe == 1)
+            Barang Berpindah
+          @endif
+        </p>
       </div>
       <div>
         <h6 class="fw-semibold mb-1">Harga Awal :</h6>
@@ -59,7 +65,16 @@
       </div>
       <div>
         <h6 class="fw-semibold mb-1">Status :</h6>
-        <p class="fw-light">{{ $barang->status }}</p>
+        <p class="fw-light">
+          @if ($barang->status == 0)
+            Baru
+          @elseif ($barang->status = 1)
+            Hilang
+          @elseif ($barang->status = 2)
+            Rusak Ringan
+          @elseif ($barang->status = 3)
+            Rusak
+          @endif
       </div>
       <div>
         <h6 class="fw-semibold mb-1">Generate Kode QR</h6>
