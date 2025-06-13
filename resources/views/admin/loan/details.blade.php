@@ -20,7 +20,7 @@
 
 <div class="container-fluid my-4">
   <div class="d-flex align-items-center gap-2 mb-4">
-    <a href="{{ route('inventaris.index') }}">
+    <a href="{{ route('peminjaman.index') }}">
       <i class="bi bi-arrow-left-square fs-3"></i>
     </a>
     <h4 class="mb-0">Detail Barang</h4>
@@ -85,11 +85,11 @@
         </div>
       @endisset
       @if ($barang->keterangan)
-        <div>
-          <h6 class="fw-semibold mb-1">Keterangan :</h6>
-          <p class="fw-light">
-            {{ $barang->keterangan }}
-        </div>
+      <div>
+        <h6 class="fw-semibold mb-1">Keterangan :</h6>
+        <p class="fw-light">
+          {{ $barang->keterangan }}
+      </div>
       @endif
       
       <div>
@@ -101,21 +101,18 @@
 
     {{-- Kolom Kanan --}}
     <div class="col-md-6 d-flex flex-column align-items-start">
-      <h6 class="fw-semibold mb-2">Bukti Pembelian :</h6>
-      @isset($barang->bukti)
-        <img src="{{ asset('storage/' . $barang->bukti) }}" alt="Bukti Pembelian" class="img-fluid mb-4" style="max-height: 250px;">
-      @endisset
+      <div>
+        <h6 class="fw-semibold mb-2">Bukti Pembelian :</h6>
+        @isset($barang->bukti)
+          <img src="{{ asset('storage/' . $barang->bukti) }}" alt="Bukti Pembelian" class="img-fluid mb-4" style="max-height: 250px;">
+        @endisset
 
-      @empty($barang->bukti)
-        <p> tidak ada bukti invoice </p>
-      @endempty
-      
-      {{-- Tombol --}}
-      {{-- <div class="d-flex justify-content-end w-100 gap-2 mt-auto">
-        <a href="{{ route('inventaris.index') }}" class="btn btn-danger">Batal</a>
-        <button class="btn btn-success">Simpan</button>
-      </div> --}}
+        @empty($barang->bukti)
+          <p> tidak ada bukti invoice </p>
+        @endempty
+      </div>
     </div>
+    
   </div>
 </div>
 
@@ -142,17 +139,11 @@
             <span class="badge bg-secondary">{{ $label }}</span>
           </div>
           <div>Keterangan: {{ $log->keterangan }}</div>
-          @if ($log->bukti_transfer)            
-            <div>
-              <p>
-                Bukti transfer: 
-              </p>
-              <img src="{{ asset('storage/' . $log->bukti_transfer) }}" alt="Gambar tidak ditemukan">
-            </div>
-          @endif
+          <div>Bukti transfer: {{ $log->bukti_transfer }}</div>
         </li>
       @endforeach
     </ul>
   </div>
 @endif
 @endsection
+

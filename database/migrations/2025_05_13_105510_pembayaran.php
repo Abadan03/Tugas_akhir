@@ -20,6 +20,7 @@ return new class extends Migration
             $table->unsignedBigInteger('barang_rusaks_id');
 
             $table->integer('biaya_perbaikan')->nullable();
+            $table->string('bukti_transfer')->nullable();
             $table->timestamps();
 
             $table->foreign('barang_rusaks_id')->references('id')->on('barang_rusaks')->onDelete('cascade');

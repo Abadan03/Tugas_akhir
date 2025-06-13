@@ -87,10 +87,12 @@
               Rusak Ringan
             @elseif ($item->status == 3)
               Rusak
+            @elseif ($item->status == 4)
+              Diperbarui
             @endif
           </td>
           <td class="d-flex gap-2">
-              <a href="{{ route('inventaris.details', $item->id) }}" class="text-black">
+              <a href="{{ route('inventaris.show', $item->id) }}" class="text-black">
                   <i class="bi bi-eye"></i>
               </a>
               <form action="{{ route('inventaris.destroy', $item->id) }}" method="POST">
@@ -100,11 +102,23 @@
                       <i class="bi bi-trash"></i>
                   </button>
               </form>
-              @if ($item->status == 0 && $item->kategori != 1)
+              @if ($item->status == 0 )
+                @if ($item->kategori != 1)
+                  <a href="{{ route('inventaris.edit', $item->id) }}" class="text-black">
+                      <i class="bi bi-pencil-square"></i>
+                  </a>
+                @endif
+              @elseif ($item->status == 4 && $item->kategori != 1) 
                   <a href="{{ route('inventaris.edit', $item->id) }}" class="text-black">
                       <i class="bi bi-pencil-square"></i>
                   </a>
               @endif
+              {{-- @if ($item->status == 0 && $item->status == 4 && $item->kategori != 1)
+                  
+                @elseif
+              @endif --}}
+
+              {{-- @@condition_1 = $item->status == 0 && $item->kategori != 1 --}}
           </td>
       </tr>
       @endforeach

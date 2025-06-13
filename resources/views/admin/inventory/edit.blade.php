@@ -24,15 +24,13 @@
 @include('layouts.flash-message')
 
 <div class="d-flex align-items-center my-3 gap-2 container-fluid">
-  {{-- <button class=""> --}}
-    <a href="{{ route('inventaris.index') }}">
-      <i class="bi bi-arrow-left-square fs-3"></i>
-    </a>
-  {{-- </button> --}}
+  <a href="{{ route('inventaris.index') }}">
+    <i class="bi bi-arrow-left-square fs-3"></i>
+  </a>
   <h4 class="mb-0">Edit barang</h4>
 </div>
 
-<div class="container-fluid ">
+<div class="container-fluid">
   <form action="{{ route('inventaris.update', $barang->id) }}" method="POST" enctype="multipart/form-data" class="p-4 bg-white">
     @csrf
     @method('PUT')
@@ -48,24 +46,13 @@
           <option value="1" {{ $barang->kategori == '1' ? 'selected' : '' }}>Dipinjam oleh siswa</option>
         </select>
       </div>
-      {{-- @if ($barang->status != 0) --}}
-      <div id="nama_siswa_container"  data-namasiswa="{{ old('namasiswa', $barang->nama_siswa ?? '') }}">
-        {{-- <div class="mb-3 d-none" id="field-nama-siswa">
+      
+      <div id="nama_siswa_container" @if ($barang->kategori != '1') style="display:none;" @endif>
+        <div class="mb-3">
           <label for="nama_siswa" class="form-label">Nama Siswa <span class="text-danger">*</span></label>
-          <input type="text" class="form-control" id="nama_siswa" name="nama_siswa" value="">
-        </div> --}}
+          <input type="text" class="form-control" id="nama_siswa" name="nama_siswa" value="{{ old('nama_siswa', $barang->nama_siswa ?? '') }}">
+        </div>
       </div>
-      {{-- @foreach($barangRusaks as $items)
-      <div class="mb-3 d-none" id="field-nama-siswa">
-        <label for="nama_siswa" class="form-label">Nama Siswa <span class="text-danger">*</span></label>
-        <input type="text" class="form-control" id="nama_siswa" name="nama_siswa" value="{{ $items->barang->nama_siswa }}">
-      </div>
-      @endforeach --}}
-
-      {{-- {{ $barang->nama_siswa }} --}}
-
-      {{-- @endif --}}
-      {{-- test --}}
     
       <div class="mb-3">
         <label for="tipe" class="form-label">Tipe <span class="text-danger">*</span></label>
@@ -77,24 +64,23 @@
       
       <div class="mb-3">
         <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
-        <select class="form-select" id="status" name="status" required >
+        <select class="form-select" id="status" name="status" required>
           <option value="0" {{ $barang->status == '0' ? 'selected' : '' }}>Baru</option>
           <option value="1" {{ $barang->status == '1' ? 'selected' : '' }}>Hilang</option>
           <option value="2" {{ $barang->status == '2' ? 'selected' : '' }}>Rusak ringan</option>
           <option value="3" {{ $barang->status == '3' ? 'selected' : '' }}>Rusak</option>
+          <option value="4" {{ $barang->status == '4' ? 'selected' : '' }}>Diperbarui</option>
         </select>
       </div>
-
-      <div id="keterangan_container" >
       
+      <div id="keterangan_container">
+        {{-- Keterangan field will be added dynamically --}}
       </div>
-      {{-- {{ asset('storage', $items->surat) }} --}}
-      {{-- @foreach($barangRusaks as $data) --}}
-      <div id="surat_container" >
-  
+      
+      <div id="surat_container">
+        {{-- Surat field will be added dynamically --}}
       </div>
-      {{-- @endforeach --}}
-
+      
       <div class="mb-3">
         <label for="harga" class="form-label">Harga Awal <span class="text-danger">*</span></label>
         <input type="number" class="form-control" name="harga_awal" id="harga" value="{{ $barang->harga_awal }}" required>
@@ -110,7 +96,7 @@
         @if($barang->bukti)
           <p><a href="{{ asset('storage/' . $barang->bukti) }}" target="_blank">Lihat Bukti</a></p>
         @else
-          <p class="fs-6 text-danger"><span>* </span>Admin belum memasukkan bukti pembelian</p>
+          <p class="fs-6 text-danger"><span>* </span>Admin tidak memasukkan bukti pembelian</p>
           <input type="file" class="form-control" id="bukti" name="bukti">
         @endif
       </div>
@@ -134,59 +120,45 @@
     const kategoriElement = document.getElementById("kategori");
     const keteranganContainer = document.getElementById("keterangan_container");
     const suratContainer = document.getElementById("surat_container");
-    const NamaSiswaContainer = document.getElementById('nama_siswa_container');
-    // namaSiswa
-    // Ambil data keterangan dari atribut data-keterangan
-    const savedKeterangan = keteranganContainer.dataset.keterangan;
-    const savedSurat = suratContainer.dataset.surat;
-    const savedNamaSiswa = NamaSiswaContainer.dataset.namasiswa
-    // namaSiswa
-    // const statusValue = statusElement.value;
-
-    // console.log("Image source is:", savedNamaSiswa);
-    
+    const namaSiswaContainer = document.getElementById('nama_siswa_container');
+    const savedNamaSiswa = namaSiswaContainer.querySelector('#nama_siswa');
     
     function updateFields() {
       const statusValue = statusElement.value;
       const kategoriValue = kategoriElement.value;
+      
       keteranganContainer.innerHTML = "";
       suratContainer.innerHTML = "";
-      // namasiswa
-      // if(kategoriValue != 0 && savedNamaSiswa) {
+      
+      if (kategoriValue === "1") {
+        namaSiswaContainer.style.display = "block";
+      } else {
+        namaSiswaContainer.style.display = "none";
+      }
 
-      //   NamaSiswaContainer.innerHTML = `
-      //     <div class="mb-3">
-      //       <label for="nama_siswa" class="form-label">Nama Siswa <span class="text-danger">*</span></label>
-      //       <input type="text" class="form-control" id="nama_siswa" name="nama_siswa" value="${savedNamaSiswa}">
-      //     </div>
-      //   `;
-      // }
-
-      if (statusValue !== "0") {
-        // NamaSiswa.
+      if (statusValue !== "0" && statusValue !== "4") {
         keteranganContainer.innerHTML = `
           <div class="mb-3" id="field-keterangan">
             <label for="keterangan" class="form-label">Keterangan <span class="text-danger">*</span></label>
             <textarea name="keterangan" id="keterangan" cols="30" rows="4" class="form-control" required></textarea>
           </div>
         `;
-
+        
         suratContainer.innerHTML = `
           <div class="mb-3 d-flex flex-column" id="field-surat">
             <label for="surat" class="form-label">Jika dalam bentuk surat</label>
             <input type="file" id="surat" name="surat">
           </div>
         `;
-
-        
       }
     }
 
-    // Inisialisasi saat halaman dimuat
+    // Initialize fields on page load
     updateFields();
 
-    // Update saat status berubah
+    // Update fields when status or kategori changes
     statusElement.addEventListener("change", updateFields);
+    kategoriElement.addEventListener("change", updateFields);
   });
 </script>
 @endpush

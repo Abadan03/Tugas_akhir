@@ -62,6 +62,8 @@
     <tbody>
       @foreach ($data as $item)
       {{-- @if ($item->barang->status === "Baru") --}}
+       {{-- {{ $item->status }} --}}
+       {{-- {{ $item->barang->tipe }} --}}
       <tr>
           <td>{{ $item->barang->nama_barang }}</td>
           <td>
@@ -75,27 +77,33 @@
             {{ $item->barang->nama_siswa }}
           </td>
           <td>
-            @if ($item->tipe == 0)
+            @if ($item->barang->tipe == 0)
               Barang Tetap
-            @elseif ($item->tipe == 1)
+            @elseif ($item->barang->tipe == 1)
               Barang Berpindah
             @endif
           </td>
           <td>
-            @if ($item->status == 0)
+            @if ($item->barang->status == 0)
               Baru
-            @elseif ($item->status == 1)
+            @elseif ($item->barang->status == 1)
               Hilang
-            @elseif ($item->status == 2)
+            @elseif ($item->barang->status == 2)
               Rusak Ringan
-            @elseif ($item->status == 3)
+            @elseif ($item->barang->status == 3)
               Rusak
+            @elseif ($item->barang->status == 4)
+              Diperbarui
             @endif
           </td>
+
+         
           <td class="d-flex gap-2">
-              {{-- <a href="{{ route('peminjaman.details', $item->id) }}" class="text-black">
+
+            {{-- {{ $item->barang_id }} --}}
+              <a href="{{ route('peminjaman.show', $item->barang_id) }}" class="text-black">
                   <i class="bi bi-eye"></i>
-              </a> --}}
+              </a>
               <form action="{{ route('peminjaman.destroy', $item->id) }}" method="POST">
                   @csrf
                   @method('DELETE')
@@ -103,9 +111,22 @@
                       <i class="bi bi-trash"></i>
                   </button>
               </form>
-              <a href="{{ route('peminjaman.edit', $item->barang->id) }}" class="text-black">
-                  <i class="bi bi-pencil-square"></i>
-              </a>
+              {{-- @if ($item->barang->status == 0 && $item->barang->kategori != 0)
+                <a href="{{ route('peminjaman.edit', $item->barang->id) }}" class="text-black">
+                    <i class="bi bi-pencil-square"></i>
+                </a>
+              @endif --}}
+              @if ($item->barang->status == 0 || $item->barang->status === 4)
+                @if ($item->barang->kategori != 0)
+                  <a href="{{ route('peminjaman.edit', $item->barang->id) }}" class="text-black">
+                      <i class="bi bi-pencil-square"></i>
+                  </a>
+                @endif
+              {{-- @elseif ($item->barang->status == 4 && $item->kategori != 1) 
+                  <a href="{{ route('inventaris.edit', $item->id) }}" class="text-black">
+                      <i class="bi bi-pencil-square"></i>
+                  </a> --}}
+              @endif
           </td>
       </tr>
       {{-- @endif --}}

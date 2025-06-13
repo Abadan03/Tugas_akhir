@@ -32,7 +32,7 @@
   </div>
 </div>
 
-<form action="{{ route('pembayaran.update', $items->id) }}" method="POST" enctype="multipart/form-data" class="p-4 bg-white" id="submit-form">
+<form action="{{ route('pembayaran.update', $items->barang->id) }}" method="POST" enctype="multipart/form-data" class="p-4 bg-white" id="submit-form">
   @csrf
   @method('PUT')
   {{-- @if ($barang->status == 0) --}}
@@ -52,10 +52,12 @@
       <input type="hidden" name="kategori" id="kategori" value="{{ $items->barang->kategori }}">
     </div>
 
-    <div class="mb-3 d-none" id="field-nama-siswa">
-      <label for="nama_siswa" class="form-label">Nama Siswa <span class="text-danger">*</span></label>
-      <input type="text" class="form-control" id="nama_siswa" name="nama_siswa" value="{{ $items->barang->nama_siswa }}">
-    </div>
+    @if ($items->barang->nama_siswa)
+      <div class="mb-3" id="field-nama-siswa">
+        <label for="nama_siswa" class="form-label">Nama Siswa <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" id="nama_siswa" name="nama_siswa" value="{{ $items->barang->nama_siswa }}">
+      </div>
+    @endif
   
     <div class="mb-3">
       <label for="tipe" class="form-label">Tipe <span class="text-danger">*</span></label>
@@ -73,6 +75,7 @@
         <option value="1" {{ $items->barang->status == 1 ? 'selected' : '' }}>Hilang</option>
         <option value="2" {{ $items->barang->status == 2 ? 'selected' : '' }}>Rusak ringan</option>
         <option value="3" {{ $items->barang->status == 3 ? 'selected' : '' }}>Rusak</option>
+        <option value="4" {{ $items->barang->status == 4 ? 'selected' : '' }}>Diperbarui</option>
       </select>
     </div>
 
@@ -87,7 +90,8 @@
   
     <div class="mb-3">
       <label for="harga" class="form-label">Harga Awal <span class="text-danger">*</span></label>
-      <input type="number" class="form-control" name="harga_display" id="harga_display" value="{{ $items->barang->harga_awal }}" required disabled>
+      <input type="text" class="form-control" name="harga_display" id="harga_display" 
+        value="Rp. {{ number_format($items->barang->harga_awal, 0, ',', '.') }}" required readOnly>
       <input type="hidden" class="form-control" name="harga_awal" id="harga_awal" value="{{ $items->barang->harga_awal }}">
     </div>
   
@@ -102,14 +106,49 @@
         <p><a href="{{ asset('storage/' . $items->barang->bukti) }}" target="_blank">Lihat Bukti</a></p>
         <img src="{{ asset('storage/' . $items->barang->bukti) }}" alt="" style="max-width: 500px;">
       @else
-        <p class="fs-6 text-danger"><span>* </span>Admin belum memasukkan bukti pembelian</p>
+        <p class="fs-6 text-p-grey">
+          <small>
+            (Admin tidak memasukkan bukti pembelian)
+          </small>
+        </p>
         <input type="file" class="form-control" id="bukti" name="bukti">
       @endif
     </div>
 
     <div class="mb-3">
+      <label for="status" class="form-label">Biaya perbaikan <span class="text-danger">*</span></label>
+      @if ($payment)
+        <input type="text" min="0" class="form-control" name="biaya_perbaikan" id="biaya_perbaikan" value="{{ $payment->biaya_perbaikan ? $payment->biaya_perbaikan : '' }}" required>
+      @else
+        <p class="fs-6 text-p-grey">
+          <small>
+            (Admin belum memasukkan biaya perbaikan)
+          </small>
+        </p>
+        <input type="text" min="0" class="form-control" name="biaya_perbaikan" id="biaya_perbaikan" value="" required>
+      @endif
+    </div>
+
+    {{-- {{  }} --}}
+    {{-- @currency($payment->biaya_perbaikan) --}}
+
+    {{-- <div class="mb-3">
+      <label for="biaya_perbaikan" class="form-label">Biaya perbaikan <span class="text-danger">*</span></label>
+      <input 
+        type="text" 
+        class="form-control" 
+        id="biaya_perbaikan_display"
+        value="{{ $payment->biaya_perbaikan ? 'Rp. ' . number_format($payment->biaya_perbaikan, 0, ',', '.') : '' }}" 
+        required
+      >
+
+      <input type="hidden" name="biaya_perbaikan" id="biaya_perbaikan" value="{{ $payment->biaya_perbaikan }}">
+    </div> --}}
+
+
+    <div class="mb-3">
       <label for="status" class="form-label">Jika dalam bentuk transfer</label>
-      <input type="file" class="form-control" name="transfer" id="transfer" value="">
+      <input type="file" class="form-control" name="bukti_transfer" id="bukti_transfer" value="">
     </div>
 
 
@@ -121,24 +160,6 @@
       <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#confirmationmodal" id="confirmation-button">Konfirmasi</button>
     </div>
 
-    <!-- Modal -->
-    {{-- <div class="modal fade" id="confirmationmodal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            ...
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary" >Yes</button>
-          </div>
-        </div>
-      </div>
-    </div> --}}
     <div class="modal fade" id="confirmationmodal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -183,14 +204,23 @@
         keteranganContainer.innerHTML = `
           <div class="mb-3" id="field-keterangan">
             <label for="keterangan" class="form-label">Keterangan <span class="text-danger">*</span></label>
-            <textarea name="keterangan" id="keterangan" cols="30" rows="4" class="form-control" required>${savedKeterangan || ''}</textarea>
+            <textarea name="keterangan" id="keterangan" cols="30" rows="4" class="form-control" required >${savedKeterangan || ''}</textarea>
           </div>
         `;
 
         suratContainer.innerHTML = `
           <div class="mb-3 d-flex flex-column" id="field-surat">
             <label for="surat" class="form-label">Bukti Surat</label>
-            <img src="${savedSurat || ''}" class="img-fluid" alt="Surat sebelumnya" style="max-width: 500px;">
+            ${savedSurat ? `
+              <img src="${savedSurat}" class="img-fluid" alt="Surat sebelumnya" style="max-width: 500px;">
+            ` : `
+            <p class="fs-6 text-p-grey">
+              <small>
+                (Admin tidak memasukkan surat kerusakan)
+              </small>
+            </p>  
+            <input type="file" class="form-control" id="surat" name="surat">
+            `}
           </div>
         `;
       }
@@ -209,6 +239,11 @@
    yesButton.addEventListener("click", function () {
     form.submit();
   });
+
+
+  // Real-time Formatter integer to rupiah 
+  
+ 
 </script>
 
 @endpush
