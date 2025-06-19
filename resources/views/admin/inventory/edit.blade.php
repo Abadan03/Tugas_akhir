@@ -31,13 +31,17 @@
 </div>
 
 <div class="container-fluid">
-  <form action="{{ route('inventaris.update', $barang->id) }}" method="POST" enctype="multipart/form-data" class="p-4 bg-white">
+  <form action="{{ route('inventaris.update', $barang->id) }}"  method="POST" enctype="multipart/form-data" class="p-4 bg-white">
     @csrf
     @method('PUT')
+     <input type="hidden" name="_method" value="PUT">
       <div class="mb-3">
         <label for="nama_barang" class="form-label">Nama Barang<span class="text-danger">*</span></label>
         <input type="text" class="form-control" id="nama_barang" name="nama_barang" value="{{ $barang->nama_barang }}" required>
       </div>
+
+      {{-- Mengambil barang_id --}}
+      <input type="text" class="form-control visually-hidden" id="barang_id" name="barang_id" value="{{ $barang->id }}" required>
     
       <div class="mb-3">
         <label for="kategori" class="form-label">Kategori <span class="text-danger">*</span></label>
@@ -85,12 +89,35 @@
         <label for="harga" class="form-label">Harga Awal <span class="text-danger">*</span></label>
         <input type="number" class="form-control" name="harga_awal" id="harga" value="{{ $barang->harga_awal }}" required>
       </div>
-    
+
+      {{-- @if ($barang->kodeQR) 
+        <div class="mb-3">
+          <label class="form-label">Kode QR</label>
+          <input type="text" class="visually-hidden" id="display_kodeQR" name="display_kodeQR" value="{{ old('kodeQR', $barang->kodeQR ?? '') }}">
+          <input type="text" class="visually-hidden" id="kodeQR" name="kodeQR" value="{{ old('kodeQR', $barang->kodeQR ?? '') }}">
+
+          <div id="qr-code" class="my-3"></div>
+        </div>
+
+      @else
+          <div class="mb-3">
+            <label class="form-label">Generate Kode QR</label><br>
+            <button type="button" class="btn btn-sm btn-outline-dark" id="generate-qr">Klik untuk Generate Kode QR</button>
+            <input type="text" class="" name="kodeQR" id="kodeQR" value="">
+          </div>
+
+
+        <div id="qr-code" class="my-3"></div>
+      @endif --}}
+
       <div class="mb-3">
-        <label class="form-label">Kode QR</label>
-        <input type="text" class="form-control" name="kodeQR" value="{{ $barang->kodeQR }}" readonly>
+        <label class="form-label">Generate Kode QR</label><br>
+        <button type="button" class="btn btn-sm btn-outline-dark" id="generate-qr">Klik untuk Generate Kode QR</button>
+        <input type="text" class="visually-hidden" name="kodeQR" id="kodeQR" value="{{ old('kodeQR', $barang->kodeQR ?? '') }}">
       </div>
-    
+
+      <div id="qr-code" class="my-3"></div>
+
       <div class="mb-3">
         <label for="bukti" class="form-label">Bukti Pembelian :</label>
         @if($barang->bukti)
@@ -118,47 +145,132 @@
   document.addEventListener("DOMContentLoaded", function () {
     const statusElement = document.getElementById("status");
     const kategoriElement = document.getElementById("kategori");
+    const namaSiswaContainer = document.getElementById('nama_siswa_container');
     const keteranganContainer = document.getElementById("keterangan_container");
     const suratContainer = document.getElementById("surat_container");
-    const namaSiswaContainer = document.getElementById('nama_siswa_container');
-    const savedNamaSiswa = namaSiswaContainer.querySelector('#nama_siswa');
-    
+
+    const namaBarang = document.getElementById("nama_barang");
+    let namaSiswa = document.getElementById("nama_siswa");
+    const tipeElement = document.getElementById("tipe");
+    const hargaElement = document.getElementById("harga");
+    const barangIdElement = document.getElementById("barang_id");
+    const kodeQRInput = document.getElementById("kodeQR");
+    const qrContainer = document.getElementById("qr-code");
+    const generateQRBtn = document.getElementById("generate-qr");
+
+    function getStatusLabel(val) {
+      switch (val) {
+        case "0": return "Baru";
+        case "1": return "Hilang";
+        case "2": return "Rusak ringan";
+        case "3": return "Rusak";
+        case "4": return "Diperbarui";
+        default: return "-";
+      }
+    }
+
+    function getKategoriLabel(val) {
+      return val === "1" ? "Dipinjam oleh siswa" : "Milik Sekolah";
+    }
+
+    function getTipeLabel(val) {
+      return val === "1" ? "Barang berpindah" : "Barang tetap";
+    }
+
+    function generateQRContent() {
+      const kategoriVal = kategoriElement.value;
+      const statusVal = statusElement.value;
+      const nama = kategoriVal === "1" ? (namaSiswa?.value || '-') : "-";
+      const keteranganInput = document.getElementById("keterangan");
+
+      console.log("Nama siswa:", nama); // debug
+      return JSON.stringify({
+        id: barangIdElement.value || '',
+        nama_barang: namaBarang.value || '',
+        kategori: getKategoriLabel(kategoriVal),
+        nama_siswa: kategoriVal === "1" ? (namaSiswa?.value || '-') : "-",
+        tipe: getTipeLabel(tipeElement.value),
+        status: getStatusLabel(statusVal),
+        harga_awal: hargaElement.value || '',
+        keterangan: keteranganInput ? keteranganInput.value : '-'
+      });
+    }
+
+    function renderQRCode(content) {
+      qrContainer.innerHTML = ""; // clear existing QR
+      new QRCode(qrContainer, {
+        text: content,
+        width: 256,
+        height: 256,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    }
+
     function updateFields() {
-      const statusValue = statusElement.value;
-      const kategoriValue = kategoriElement.value;
-      
+      const kategoriVal = kategoriElement.value;
+      const statusVal = statusElement.value;
+      namaSiswa = document.getElementById("nama_siswa"); // refresh elemen
+
+      namaSiswaContainer.style.display = kategoriVal === "1" ? "block" : "none";
       keteranganContainer.innerHTML = "";
       suratContainer.innerHTML = "";
-      
-      if (kategoriValue === "1") {
-        namaSiswaContainer.style.display = "block";
-      } else {
-        namaSiswaContainer.style.display = "none";
+
+      if (namaSiswa) {
+        namaSiswa.addEventListener("input", () => {
+          const content = generateQRContent();
+          kodeQRInput.value = content;
+          renderQRCode(content);
+        });
       }
 
-      if (statusValue !== "0" && statusValue !== "4") {
+      if (statusVal !== "0" && statusVal !== "4") {
         keteranganContainer.innerHTML = `
-          <div class="mb-3" id="field-keterangan">
+          <div class="mb-3">
             <label for="keterangan" class="form-label">Keterangan <span class="text-danger">*</span></label>
             <textarea name="keterangan" id="keterangan" cols="30" rows="4" class="form-control" required></textarea>
           </div>
         `;
-        
         suratContainer.innerHTML = `
-          <div class="mb-3 d-flex flex-column" id="field-surat">
+          <div class="mb-3">
             <label for="surat" class="form-label">Jika dalam bentuk surat</label>
-            <input type="file" id="surat" name="surat">
+            <input type="file" id="surat" name="surat" class="form-control">
           </div>
         `;
       }
     }
 
-    // Initialize fields on page load
+    kategoriElement.addEventListener("change", updateFields);
+    statusElement.addEventListener("change", updateFields);
     updateFields();
 
-    // Update fields when status or kategori changes
-    statusElement.addEventListener("change", updateFields);
-    kategoriElement.addEventListener("change", updateFields);
+    // Tombol generate QR manual (jika ada)
+    generateQRBtn?.addEventListener("click", function () {
+      const kategoriVal = kategoriElement.value;
+
+      // validasi nama_siswa jika kategori = 1
+      if (kategoriVal === "1" && (!namaSiswa || namaSiswa.value.trim() === "")) {
+        alert("Silakan isi Nama Siswa terlebih dahulu.");
+        return;
+      }
+
+      const content = generateQRContent();
+      kodeQRInput.value = content;
+      renderQRCode(content);
+    });
+
+    // Saat form disubmit, QR harus diupdate dulu
+    document.querySelector("form").addEventListener("submit", function () {
+      const content = generateQRContent();
+      kodeQRInput.value = content;
+      renderQRCode(content); // Tambahkan ini juga untuk memastikan preview update
+    });
+
+    // Saat halaman load dan kodeQR sudah ada, render ulang preview-nya
+    if (kodeQRInput?.value) {
+      renderQRCode(kodeQRInput.value);
+    }
   });
 </script>
 @endpush

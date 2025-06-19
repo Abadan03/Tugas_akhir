@@ -78,11 +78,11 @@
         <input type="number" class="form-control" name="harga_awal" id="harga" required>
       </div>
 
-      <div class="mb-3">
+      {{-- <div class="mb-3">
         <label class="form-label">Generate Kode QR</label><br>
         <button type="button" class="btn btn-sm btn-outline-dark">Klik untuk Generate Kode QR</button>
         <input type="text" class="visually-hidden" name="kodeQR" id="kodeQR" value="12(2Gss98vT}YG!saSD">
-      </div>
+      </div> --}}
 
       <div class="mb-3">
         <label for="bukti" class="form-label">Bukti Pembelian :</label>

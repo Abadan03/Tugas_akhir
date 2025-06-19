@@ -36,7 +36,7 @@
     <a href="">
       <button class="btn btn-skyblue">Print Kode QR</button>
     </a>
-    <a href="">
+    <a href="{{ route('qrcode.render', ['from' => 'inventaris']) }}">
       <button class="btn btn-darkblue text-white ">Scan Kode QR</button>
     </a>
     <a href="">

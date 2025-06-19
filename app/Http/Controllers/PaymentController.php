@@ -186,6 +186,7 @@ class PaymentController extends Controller
         
         $validatedData = $request->validate([
             'keterangan' => 'required|string|max:255',
+            'kodeQR' => 'nullable|string|max:255',
             'biaya_perbaikan' => 'required|string|max:255',
             'bukti' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'surat' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
@@ -232,7 +233,26 @@ class PaymentController extends Controller
         $barang->keterangan = $request->keterangan;
         $barang->tipe = $request->tipe;
         $barang->status = 4;
-        $barang->bukti = $pathBukti;
+        $barang->keterangan = $request->keterangan;
+
+        // Generate ulang isi QR-nya
+        $kategoriLabel = $barang->kategori == 1 ? 'Dipinjam oleh siswa' : 'Milik Sekolah';
+        $tipeLabel = $barang->tipe == 1 ? 'Barang berpindah' : 'Barang tetap';
+        $statusLabel = 'Diperbarui';
+
+        $kodeQR = json_encode([
+            'id' => $barang->id,
+            'nama_barang' => $barang->nama_barang,
+            'tipe' => $tipeLabel,
+            'kategori' => $kategoriLabel,
+            'status' => $statusLabel,
+            'keterangan' => $request->keterangan,
+            'harga_awal' => $request->harga_awal,
+        ]);
+
+        $barang->kodeQR = $kodeQR;
+
+        // $barang->bukti = $pathBukti;
         $barang->save();
 
         // update for pembayaran

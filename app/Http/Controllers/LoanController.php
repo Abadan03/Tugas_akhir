@@ -139,6 +139,7 @@ class LoanController extends Controller
         $barang->status = $request->status;
         $barang->keterangan = $request->keterangan;
         $barang->nama_siswa = $request->nama_siswa;
+        $barang->kodeQR = $request->kodeQR;
         $barang->tipe = $request->tipe;
         $barang->kategori = $request->kategori_display;
 
@@ -191,5 +192,13 @@ class LoanController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function showFromQR()
+    {
+        // $barang = Barang::findOrFail($id);
+        // $barangRusaks = BarangRusak::where('barang_id', $id)->with('barang')->get();
+
+        return view('admin.inventory.scan-QR');
     }
 }

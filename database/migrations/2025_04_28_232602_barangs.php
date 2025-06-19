@@ -23,7 +23,7 @@ return new class extends Migration
             // $table->foreignId('barang_rusak_id')->constrained('barang_rusaks')->onDelete('cascade');
             // $table->string('barangrusak_id')->nullable();
             $table->string('keterangan')->nullable();
-            $table->string('kodeQR');
+            $table->string('kodeQR')->nullable();
             $table->string('bukti')->nullable();
             $table->timestamps();
         });

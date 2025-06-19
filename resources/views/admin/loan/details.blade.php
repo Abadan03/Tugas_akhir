@@ -94,9 +94,17 @@
       
       <div>
         <h6 class="fw-semibold mb-1">Generate Kode QR</h6>
-        <p class="fw-light mb-2">Item-#{{ $barang->kodeQR }}</p>
-        <img src="{{ asset('path/to/qr-code.png') }}" alt="QR Code" width="120">
+        {{-- <p class="fw-light mb-2">Item-#{{ $barang->kodeQR }}</p> --}}
+        <input type="text" class="visually-hidden" id="display_kodeQR" name="display_kodeQR" value="{{ old('kodeQR', $barang->kodeQR ?? '') }}">
+        <div id="qr-code" class="my-3"></div>
+        {{-- <img src="{{ asset('path/to/qr-code.png') }}" alt="QR Code" width="120"> --}}
       </div>
+      @if ($barang->kodeQR)
+        <div class="mt-2">
+          <p class="small text-muted">Preview Konten QR:</p>
+          <pre class="bg-light p-2 rounded small">{{ $barang->kodeQR }}</pre>
+        </div>
+      @endif
     </div>
 
     {{-- Kolom Kanan --}}
@@ -147,3 +155,24 @@
 @endif
 @endsection
 
+@push('scripts')
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const qrValue = document.getElementById("display_kodeQR")?.value;
+
+    if (qrValue) {
+      const qrContainer = document.getElementById("qr-code");
+
+      new QRCode(qrContainer, {
+        text: qrValue,
+        width: 256,
+        height: 256,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    }
+  });
+</script>
+@endpush

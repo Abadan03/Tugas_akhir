@@ -35,7 +35,7 @@
     {{-- <a href="">
       <button class="btn btn-lightblue text-white ">Laporan kerusakan</button>
     </a> --}}
-    <a href="">
+    <a href="{{ route('qrcode.render', ['from' => 'peminjaman']) }}">
       <button class="btn btn-darkblue text-white ">Scan Kode QR</button>
     </a>
     <a href="">

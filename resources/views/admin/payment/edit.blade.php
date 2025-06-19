@@ -95,10 +95,17 @@
       <input type="hidden" class="form-control" name="harga_awal" id="harga_awal" value="{{ $items->barang->harga_awal }}">
     </div>
   
-    <div class="mb-3">
+    {{-- <div class="mb-3">
       <label class="form-label">Kode QR</label>
       <input type="text" class="form-control" name="kodeQR" value="{{ $items->barang->kodeQR }}" readonly>
+    </div> --}}
+
+    <div class="mb-3">
+      <label for="qrPreview" class="form-label">Kode QR</label>
+      {{-- <div id="qrPreview" class="border rounded p-3 d-inline-block"></div> --}}
+      <div id="qr-code" class="my-3"></div>
     </div>
+
   
     <div class="mb-3 ">
       <label for="bukti" class="form-label">Bukti Pembelian :</label>
@@ -231,6 +238,21 @@
 
     // Update saat status berubah
     statusElement.addEventListener("change", updateFields);
+
+    // Generate ulang QR Code dari nilai yang sudah tersimpan
+    const kodeQR = @json($items->barang->kodeQR ?? '');
+    const qrPreviewContainer = document.getElementById("qr-code");
+
+    if (kodeQR && qrPreviewContainer) {
+      new QRCode(qrPreviewContainer, {
+        text: kodeQR,
+        width: 256,
+        height: 256,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    }
   });
 
   const form = document.getElementById("submit-form");

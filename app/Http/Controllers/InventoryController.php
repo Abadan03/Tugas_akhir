@@ -16,6 +16,10 @@ use App\Models\BarangRusak;
 use App\Models\Pembayaran;
 use App\Models\itemStatusLog;
 
+// QR CODE Generator
+use chillerlan\QRCode\QRCode;
+use chillerlan\QRCode\QROptions;
+
 
 class InventoryController extends Controller
 {
@@ -48,11 +52,11 @@ class InventoryController extends Controller
         //
         $validatedData = $request->validate([
             'nama_barang' => 'required|string|max:255',
-            'kategori' => 'required|string|max:255',
-            'tipe' => 'required|string|max:255',
+            'kategori' => 'required|integer|max:255',
+            'tipe' => 'required|integer|max:255',
             'status' => 'required|numeric',
             'harga_awal' => 'required|numeric',
-            'kodeQR' => 'required|string|max:255',
+            'kodeQR' => 'nullable|string|max:255',
             'bukti' => 'file|mimes:jpg,jpeg,png,pdf|max:2048',
             // 'image' => 'nullable|file|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
@@ -88,6 +92,7 @@ class InventoryController extends Controller
                 'barang_id' => $barang->id,
             ]);
         }
+
 
 
         return redirect()->route('inventaris.index')->with('success', 'Barang berhasil ditambahkan');
@@ -185,9 +190,9 @@ class InventoryController extends Controller
 
         $validatedData = $request->validate([
             'nama_barang' => 'required|string|max:255',
-            'kategori' => 'required|string|max:255',
-            'tipe' => 'required|string|max:255',
-            'status' => 'required|string|max:255',
+            'kategori' => 'required|integer|max:255',
+            'tipe' => 'required|integer|max:255',
+            'status' => 'required|integer|max:255',
             'harga_awal' => 'required|numeric',
             'kodeQR' => 'required|string|max:255',
             'bukti' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
@@ -204,15 +209,26 @@ class InventoryController extends Controller
         $barang->status = $request->status;
         $barang->harga_awal = $request->harga_awal;
         $barang->kodeQR = $request->kodeQR;
-        $barang->keterangan = $request->keterangan;
+        if (!in_array((int) $request->status, [0, 4])) {
+            $barang->keterangan = $request->keterangan;
+        }
+        // $barang->keterangan = $request->keterangan;
 
         // Update nama siswa jika kategori 1
+        $pinjamans = Pinjaman::where('barang_id', $barang->id)->first();
+        // return dd($barang->toArray(), $request->all());
+        // \Log::info('UPDATE DIPANGGIL');
+        // return dd('update masuk');
 
-        if ($request->kategori ==  1) {
-            Pinjaman::create([
-                // 'user_id' => $request->user_id,
-                'barang_id' => $barang->id,
-            ]);
+        if ((int) $request->kategori == 1) {
+            // if ($barang->pinjaman) {
+            //     $pinjamans->barang_id = $barang->id;
+            //     $pinjamans->save();
+            // } else {
+                Pinjaman::create([
+                    'barang_id' => $barang->id,
+                ]);
+            // }
         }
 
         // Handle file bukti pembelian
@@ -226,21 +242,40 @@ class InventoryController extends Controller
         }
 
         // Jika status barang bukan 0 dan terdapat surat, simpan ke barang_rusak
-        if ($request->status != 0 && $request->hasFile('surat')) {
-            if ($request->status != 4) {
+        // if ($request->status != 0 && $request->hasFile('surat')) {
+        //     if ($request->status != 4) {
+        //         $file = $request->file('surat');
+        //         $suratPath = $file->storeAs('surat', $file->getClientOriginalName(), 'public');
+    
+        //         BarangRusak::create([
+        //             'barang_id' => $id,
+        //             'pinjaman_id' => null,
+        //             'surat' => $suratPath,
+        //         ]);
+        //     }
+        // }
+        if ($request->status != 0) {
+            $suratPath = null;
+
+            if ($request->hasFile('surat')) {
                 $file = $request->file('surat');
                 $suratPath = $file->storeAs('surat', $file->getClientOriginalName(), 'public');
-    
+            }
+
+            // Jika status != 4, maka kita buat entry di barang_rusaks
+            if ($request->status != 4) {
                 BarangRusak::create([
                     'barang_id' => $id,
                     'pinjaman_id' => null,
-                    'surat' => $suratPath,
+                    'surat' => $suratPath, // bisa null kalau tidak ada file
                 ]);
             }
         }
 
         // Simpan perubahan pada barang
         $barang->save();
+
+
 
         
 
@@ -254,5 +289,14 @@ class InventoryController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+
+    public function showFromQR()
+    {
+        // $barang = Barang::findOrFail($id);
+        // $barangRusaks = BarangRusak::where('barang_id', $id)->with('barang')->get();
+
+        return view('admin.inventory.scan-QR');
     }
 }

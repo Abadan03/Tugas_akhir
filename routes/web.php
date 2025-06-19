@@ -8,25 +8,25 @@ use App\Http\Controllers\LoanController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\QRCodeController;
 
 
 
 Route::middleware('auth:sanctum')->group(function () {
     
     Route::get('/dashboard', [UserController::class, 'homepage'])->name('dashboard');
-    // Route::resource('products', ProductController::class);
+
     // Inventarory Routes
     Route::resource('inventaris', InventoryController::class);
     Route::get('inventaris/details/{id}', [InventoryController::class, 'details'])->name('inventaris.details');
-    // Route::get('/inventaris', [InventoryController::class, 'index'])->name('inventaris');
-    // Route::get('/inventaris-details', [InventoryController::class, 'details'])->name('inventaris.details');
-    // Route::get('/inventaris-edit', [InventoryController::class, 'edit'])->name('inventaris.edit');
-    // Route::get('/inventaris-delete', [InventoryController::class, 'delete'])->name('inventaris.delete');
-
-    // Route::get('/peminjaman', [LoanController::class, 'index'])->name('peminjaman');
+    // Route::get('/qrcode/', [InventoryController::class, 'showFromQR'])->name('qrcode.render');
+    
+    // Loan Routes
     Route::resource('peminjaman', LoanController::class);
+    // Route::get('/qrcode/', [LoanController::class, 'showFromQR'])->name('qrcode.render');
 
-    // Route::get('/pembayaran', [PaymentController::class, 'index'])->name('pembayaran');
+    Route::get('/qrcode', [QRCodeController::class, 'render'])->name('qrcode.render');
+
     Route::resource('pembayaran', PaymentController::class);
 
     Route::post('/logout', [RegisterController::class, 'logout'])->name('logout');
