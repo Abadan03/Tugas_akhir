@@ -9,6 +9,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\QRCodeController;
+use App\Http\Controllers\ExportPDFController;
 
 
 
@@ -26,8 +27,16 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route::get('/qrcode/', [LoanController::class, 'showFromQR'])->name('qrcode.render');
 
     Route::get('/qrcode', [QRCodeController::class, 'render'])->name('qrcode.render');
+    Route::get('/qrcode/fetch/{id}', [QRCodeController::class, 'fetch'])->name('qrcode.fetch');
+    Route::post('/qrcode/update/{id}', [QRCodeController::class, 'update'])->name('qrcode.update');
+
 
     Route::resource('pembayaran', PaymentController::class);
+
+
+    // Ini untuk export PDF dan generate qr code with server-side generator
+    Route::post('/inventaris/export-pdf', [ExportPDFController::class, 'exportSelected'])->name('inventaris.exportPDF');
+
 
     Route::post('/logout', [RegisterController::class, 'logout'])->name('logout');
 });
@@ -40,6 +49,11 @@ Route::post('/login', [RegisterController::class, 'login'])->name('login.submit'
 Route::get('/register', function () {
     return view('admin.register');
 });
+
+// Route::get('/phpinfo', function () {
+//     return view('');
+// });
+
 
 // Route::get('/', function () {
 //     return view('welcome');

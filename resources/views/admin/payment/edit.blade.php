@@ -115,7 +115,7 @@
       @else
         <p class="fs-6 text-p-grey">
           <small>
-            (Admin tidak memasukkan bukti pembelian)
+            (Admin belum memasukkan bukti pembelian)
           </small>
         </p>
         <input type="file" class="form-control" id="bukti" name="bukti">
@@ -223,7 +223,7 @@
             ` : `
             <p class="fs-6 text-p-grey">
               <small>
-                (Admin tidak memasukkan surat kerusakan)
+                (Admin belum memasukkan surat kerusakan)
               </small>
             </p>  
             <input type="file" class="form-control" id="surat" name="surat">

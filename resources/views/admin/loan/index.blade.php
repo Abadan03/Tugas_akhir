@@ -104,7 +104,7 @@
               <a href="{{ route('peminjaman.show', $item->barang_id) }}" class="text-black">
                   <i class="bi bi-eye"></i>
               </a>
-              <form action="{{ route('peminjaman.destroy', $item->id) }}" method="POST">
+              <form action="{{ route('peminjaman.destroy', $item->barang->id) }}" method="POST">
                   @csrf
                   @method('DELETE')
                   <button type="submit" style="border: none; background: none;" class="text-black">

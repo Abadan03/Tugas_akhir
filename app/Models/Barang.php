@@ -19,7 +19,8 @@ class Barang extends Model
         'tipe',
         'status',
         'kodeQR',
-        'bukti'
+        'bukti',
+        'keterangan'
     ];
 
     public function pinjamans()

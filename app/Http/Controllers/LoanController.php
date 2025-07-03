@@ -62,7 +62,7 @@ class LoanController extends Controller
         $pembayaran = DB::table('pembayaran')
             ->join('barang_rusaks', 'pembayaran.barang_rusaks_id', '=', 'barang_rusaks.id')
             ->join('barangs', 'barangs.id', '=', 'barang_rusaks.barang_id')
-            ->where('pembayaran.id', $id)
+            // ->where('pembayaran.id', $id)
             ->select(
                 'barangs.id as barang_id',
                 'barang_rusaks.id as barang_rusaks_id',

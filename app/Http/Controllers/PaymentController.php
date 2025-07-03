@@ -250,7 +250,7 @@ class PaymentController extends Controller
             'harga_awal' => $request->harga_awal,
         ]);
 
-        $barang->kodeQR = $kodeQR;
+        // $barang->kodeQR = $kodeQR;
 
         // $barang->bukti = $pathBukti;
         $barang->save();
@@ -289,6 +289,7 @@ class PaymentController extends Controller
         $itemLogs->barang_id = $id;
         $itemLogs->status = $barang->status;
         $itemLogs->keterangan = $barang->keterangan;
+        $itemLogs->biaya_perbaikan = $request->biaya_perbaikan;
         $itemLogs->save();
 
         return redirect()->route('pembayaran.index')->with('success', 'Update barang telah dibarui');

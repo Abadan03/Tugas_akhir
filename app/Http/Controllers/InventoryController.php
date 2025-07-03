@@ -20,6 +20,8 @@ use App\Models\itemStatusLog;
 use chillerlan\QRCode\QRCode;
 use chillerlan\QRCode\QROptions;
 
+use Illuminate\Pagination\Paginator;
+
 
 class InventoryController extends Controller
 {
@@ -29,8 +31,9 @@ class InventoryController extends Controller
     public function index()
     {
         //
-        // $data = Barang::where('status', 0)->get();
-        $data = Barang::all();
+        // $data = Barang::all();
+        Paginator::useBootstrap(); // Tambahkan ini
+        $data = Barang::paginate(10);
         
         return view('admin.inventory.index', compact('data')); // kirim ke view
     }
@@ -132,19 +135,22 @@ class InventoryController extends Controller
         // )
         // ->get();
 
-        $history = DB::table('item_status_logs as isl')
-        ->leftJoin('barang_rusaks as br', 'isl.barang_id', '=', 'br.barang_id')
-        ->leftJoin('pembayaran as p', 'br.id', '=', 'p.barang_rusaks_id')
-        ->where('isl.barang_id', $id)
-        ->orderBy('isl.created_at', 'desc')
-        ->select(
-            'isl.status',
-            'isl.keterangan',
-            'isl.created_at',
-            'p.bukti_transfer',
-            'p.biaya_perbaikan'
-        )
-        ->get();
+        // $history = DB::table('item_status_logs as isl')
+        // ->leftJoin('barang_rusaks as br', 'isl.barang_id', '=', 'br.barang_id')
+        // ->leftJoin('pembayaran as p', 'br.id', '=', 'p.barang_rusaks_id')
+        // ->where('isl.barang_id', $id)
+        // ->orderBy('isl.created_at', 'desc')
+        // ->select(
+        //     'isl.status',
+        //     'isl.keterangan',
+        //     'isl.created_at',
+        //     'p.bukti_transfer',
+        //     'p.biaya_perbaikan'
+        // )
+        // ->get();
+        $history = itemStatusLog::where('barang_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         // return $history;
 
@@ -221,14 +227,9 @@ class InventoryController extends Controller
         // return dd('update masuk');
 
         if ((int) $request->kategori == 1) {
-            // if ($barang->pinjaman) {
-            //     $pinjamans->barang_id = $barang->id;
-            //     $pinjamans->save();
-            // } else {
-                Pinjaman::create([
-                    'barang_id' => $barang->id,
-                ]);
-            // }
+            Pinjaman::create([
+                'barang_id' => $barang->id,
+            ]);
         }
 
         // Handle file bukti pembelian

@@ -99,12 +99,6 @@
         <div id="qr-code" class="my-3"></div>
         {{-- <img src="{{ asset('path/to/qr-code.png') }}" alt="QR Code" width="120"> --}}
       </div>
-      @if ($barang->kodeQR)
-        <div class="mt-2">
-          <p class="small text-muted">Preview Konten QR:</p>
-          <pre class="bg-light p-2 rounded small">{{ $barang->kodeQR }}</pre>
-        </div>
-      @endif
     </div>
 
     {{-- Kolom Kanan --}}
@@ -124,7 +118,7 @@
   </div>
 </div>
 
-@if($history->count())
+@if($history)
   <div class="mt-4">
     <h5 class="fw-bold mb-3">Histori Status Barang</h5>
     <ul class="list-group">

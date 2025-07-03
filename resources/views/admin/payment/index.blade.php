@@ -34,7 +34,7 @@
       {{-- <a href="">
         <button class="btn btn-lightblue text-white ">Laporan kerusakan</button>
       </a> --}}
-      <a href="">
+      <a href="{{ route('qrcode.render', ['from' => 'pembayaran']) }}">
         <button class="btn btn-darkblue text-white ">Scan Kode QR</button>
       </a>
       <a href="">
@@ -64,8 +64,8 @@
       <tbody>
         {{-- {{ $data }} --}}
         @forelse ($data as $item)
-        {{ 'ini barang_id :' . $item->barang_id }}
-        {{ 'ini status :' . $item->status }} 
+        {{-- {{ 'ini barang_id :' . $item->barang_id }}
+        {{ 'ini status :' . $item->status }}  --}}
         {{-- {{ $item }} --}}
         <tr>
             <td>{{ $item->nama_barang }}</td>

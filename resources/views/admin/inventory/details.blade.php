@@ -92,17 +92,16 @@
         </div>
       @endif
       
-      <div>
-        <h6 class="fw-semibold mb-1">Kode QR</h6>
-        {{-- <p class="fw-light mb-2">Item-#{{ $barang->kodeQR }}</p> --}}
-        <input type="text" class="visually-hidden" id="display_kodeQR" name="display_kodeQR" value="{{ old('kodeQR', $barang->kodeQR ?? '') }}">
-        <div id="qr-code" class="my-3"></div>
-        {{-- <img src="{{ asset('path/to/qr-code.png') }}" alt="QR Code" width="120"> --}}
-      </div>
       @if ($barang->kodeQR)
-        <div class="mt-2">
-          <p class="small text-muted">Preview Konten QR:</p>
-          <pre class="bg-light p-2 rounded small">{{ $barang->kodeQR }}</pre>
+        <div>
+          <h6 class="fw-semibold mb-1">Kode QR</h6>
+          <input type="text" class="visually-hidden" id="display_kodeQR" name="display_kodeQR" value="{{ old('kodeQR', $barang->kodeQR ?? '') }}">
+          <div id="qr-code" class="my-3"></div>
+        </div>
+      @else    
+        <div>
+          <h6 class="fw-semibold mb-1">Kode QR</h6>
+          <p class="fs-6 text-p-grey">Admin belum generate kode QR</p>
         </div>
       @endif
     </div>
@@ -150,6 +149,7 @@
             <span class="badge bg-secondary">{{ $label }}</span>
           </div>
           <div>Keterangan: {{ $log->keterangan }}</div>
+          <div>Biaya Perbaikan: Rp. {{ number_format($log->biaya_perbaikan, 0, ',', '.') }}</div>
           @if ($log->bukti_transfer)            
             <div>
               <p>

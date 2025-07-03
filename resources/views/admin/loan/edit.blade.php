@@ -125,7 +125,7 @@
           @else
           <p class="fs-6 text-p-grey">
             <small>
-              (Admin tidak memasukkan bukti pembelian)
+              (Admin belum memasukkan bukti pembelian)
             </small>
           </p>
           <input type="file" class="form-control" id="bukti" name="bukti">
@@ -197,12 +197,6 @@
       const namaSiswa = kategoriVal === "1" ? (namaSiswaInput?.value || '-') : "-";
       return JSON.stringify({
         id: barangId,
-        nama_barang: namaBarang.value || '',
-        kategori: getLabel.kategori(kategoriVal),
-        nama_siswa: namaSiswa,
-        tipe: getLabel.tipe(tipeElement.value),
-        status: getLabel.status(statusElement.value),
-        harga_awal: hargaElement.value || ''
       });
     }
 

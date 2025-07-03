@@ -123,7 +123,7 @@
         @if($barang->bukti)
           <p><a href="{{ asset('storage/' . $barang->bukti) }}" target="_blank">Lihat Bukti</a></p>
         @else
-          <p class="fs-6 text-danger"><span>* </span>Admin tidak memasukkan bukti pembelian</p>
+          <p class="fs-6 text-danger">Admin belum memasukkan bukti pembelian</p>
           <input type="file" class="form-control" id="bukti" name="bukti">
         @endif
       </div>
@@ -186,13 +186,13 @@
       console.log("Nama siswa:", nama); // debug
       return JSON.stringify({
         id: barangIdElement.value || '',
-        nama_barang: namaBarang.value || '',
-        kategori: getKategoriLabel(kategoriVal),
-        nama_siswa: kategoriVal === "1" ? (namaSiswa?.value || '-') : "-",
-        tipe: getTipeLabel(tipeElement.value),
-        status: getStatusLabel(statusVal),
-        harga_awal: hargaElement.value || '',
-        keterangan: keteranganInput ? keteranganInput.value : '-'
+        // nama_barang: namaBarang.value || '',
+        // kategori: getKategoriLabel(kategoriVal),
+        // nama_siswa: kategoriVal === "1" ? (namaSiswa?.value || '-') : "-",
+        // tipe: getTipeLabel(tipeElement.value),
+        // status: getStatusLabel(statusVal),
+        // harga_awal: hargaElement.value || '',
+        // keterangan: keteranganInput ? keteranganInput.value : '-'
       });
     }
 
@@ -217,13 +217,13 @@
       keteranganContainer.innerHTML = "";
       suratContainer.innerHTML = "";
 
-      if (namaSiswa) {
-        namaSiswa.addEventListener("input", () => {
-          const content = generateQRContent();
-          kodeQRInput.value = content;
-          renderQRCode(content);
-        });
-      }
+      // if (namaSiswa) {
+      //   namaSiswa.addEventListener("input", () => {
+        // const content = generateQRContent();
+        // kodeQRInput.value = content;
+        // renderQRCode(content);
+      //   });
+      // }
 
       if (statusVal !== "0" && statusVal !== "4") {
         keteranganContainer.innerHTML = `

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('barang_id')->constrained('barangs')->onDelete('cascade'); 
             $table->unsignedTinyInteger('status'); 
             $table->text('keterangan')->nullable(); 
+            $table->text('biaya_perbaikan')->nullable(); 
             $table->timestamps(); 
         });
     }

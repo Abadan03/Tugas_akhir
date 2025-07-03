@@ -1,5 +1,7 @@
 <?php
 
+// Barryvdh\DomPDF\ServiceProvider::class,
+
 return [
 
     /*
@@ -104,6 +106,10 @@ return [
             explode(',', env('APP_PREVIOUS_KEYS', ''))
         ),
     ],
+    // 'providers' => [
+        
+    //     SimpleSoftwareIO\QrCode\QrCodeServiceProvider::class,
+    // ],
 
     /*
     |--------------------------------------------------------------------------
@@ -118,9 +124,15 @@ return [
     |
     */
 
+    
+
     'maintenance' => [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
+    ],
+
+    'aliases' => [
+        'QrCode' => \SimpleSoftwareIO\QrCode\Facades\QrCode::class,
     ],
 
 ];
