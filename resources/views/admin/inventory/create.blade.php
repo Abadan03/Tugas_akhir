@@ -43,8 +43,8 @@
         <label for="kategori" class="form-label">Kategori <span class="text-danger">*</span></label>
         <select class="form-select" id="kategori" name="kategori" required>
           <option value="" disabled selected>Pilih kategori</option>
-          <option value="milik">Milik Sekolah</option>
-          <option value="dipinjam">Dipinjam oleh siswa</option>
+          <option value="0">Milik Sekolah</option>
+          <option value="1">Dipinjam oleh siswa</option>
         </select>
       </div>
 
@@ -57,8 +57,8 @@
         <label for="tipe" class="form-label">Tipe <span class="text-danger">*</span></label>
         <select class="form-select" id="tipe" name="tipe" required>
           <option value="" disabled selected>Pilih tipe</option>
-          <option value="Barang berpindah">Barang berpindah</option>
-          <option value="Barang tetap">Barang tetap</option>
+          <option value="1">Barang berpindah</option>
+          <option value="0">Barang tetap</option>
         </select>
       </div>
 
@@ -66,10 +66,10 @@
         <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
         <select class="form-select" id="status" name="status" required>
           <option value="" disabled selected>Pilih status barang</option>
-          <option value="Baik">baru</option>
-          <option value="Hilang">hilang</option>
+          <option value="0">baru</option>
+          {{-- <option value="Hilang">hilang</option>
           <option value="Rusak ringan">rusak ringan</option>
-          <option value="Rusak">rusak</option>
+          <option value="Rusak">rusak</option> --}}
         </select>
       </div>
 
@@ -78,14 +78,14 @@
         <input type="number" class="form-control" name="harga_awal" id="harga" required>
       </div>
 
-      <div class="mb-3">
+      {{-- <div class="mb-3">
         <label class="form-label">Generate Kode QR</label><br>
         <button type="button" class="btn btn-sm btn-outline-dark">Klik untuk Generate Kode QR</button>
         <input type="text" class="visually-hidden" name="kodeQR" id="kodeQR" value="12(2Gss98vT}YG!saSD">
-      </div>
+      </div> --}}
 
       <div class="mb-3">
-        <label for="bukti" class="form-label">Bukti Pembelian :</label>
+        <label for="bukti" class="form-label">Bukti :</label>
         <input type="file" class="form-control" id="bukti" name="bukti">
       </div>
 
@@ -109,7 +109,7 @@
     const namaSiswaInput = document.getElementById('nama_siswa');
 
     function toggleNamaSiswa() {
-      if (kategoriSelect.value === 'dipinjam') {
+      if (kategoriSelect.value == 1) {
         namaSiswaField.classList.remove('d-none');
         namaSiswaInput.required = true;
       } else {

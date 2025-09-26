@@ -1,3 +1,7 @@
+@php
+    use Illuminate\Support\Facades\Route;
+@endphp
+
 {{-- <div class="container d-flex flex-column justify-content-between text-center w-full py-2 px-0 vh-100 bg-[#FFE5E5]">
   <div>
     <div class="logo_wrapper bg-[#FFE5E5]">
@@ -44,7 +48,11 @@
   </div>
 </div> --}}
 
-<div class="d-flex flex-column justify-content-between position-fixed vh-100 bg-white" style="width: 250px;">
+
+{{-- <div class="d-flex flex-column justify-content-between position-fixed vh-100 bg-white" style="width: 250px;"> --}}
+@if (!Route::is('qrcode.render'))
+  
+<div class="d-none d-md-flex flex-column justify-content-between position-fixed vh-100 bg-white" style="width: 250px;">
   <div>
     <!-- Logo -->
     <div class="p-4 text-center" style="background-color: #F0F0F0">
@@ -69,7 +77,7 @@
         <i class="bi bi-journal-arrow-up"></i>
         <span>Peminjaman</span>
       </a>
-      <a href="{{ route('pembayaran') }}"
+      <a href="{{ route('pembayaran.index') }}"
         class="nav-link d-flex align-items-center gap-2 py-3 {{ request()->is('pembayaran*') ? 'active bg-success text-white' : 'text-dark' }}">
         <i class="bi bi-receipt"></i>
         <span>Pembayaran</span>
@@ -96,3 +104,23 @@
     </form>
   </div>
 </div>
+@endif
+
+
+
+@if (Route::is('qrcode.render*'))
+  <div class="d-flex d-md-none justify-content-around fixed-bottom bg-success text-white py-2 shadow">
+    <div class="text-center">
+      <i class="bi bi-qr-code-scan fs-4"></i>
+      <div style="font-size: 12px;">Scan</div>
+    </div>
+    <div class="text-center">
+      <i class="bi bi-house-door fs-4"></i>
+      <div style="font-size: 12px;">Home</div>
+    </div>
+    <div class="text-center">
+      <i class="bi bi-box-arrow-left fs-4"></i>
+      <div style="font-size: 12px;">Logout</div>
+    </div>
+  </div>
+@endif

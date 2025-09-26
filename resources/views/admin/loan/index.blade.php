@@ -10,7 +10,7 @@
     <span class="input-group-text bg-white border-0">
       <i class="bi bi-search text-muted"></i>
     </span>
-    <input type="text" class="form-control border" style="max-width: 400px;" placeholder="Search nama barang, produk id, kategori">
+    <input type="text" id="search" class="form-control border" style="max-width: 400px;" placeholder="Search nama barang, produk id, kategori">
   </div>
   
   <div>
@@ -29,21 +29,21 @@
 {{-- Buttons menu --}}
 <div class="container-fluid d-flex justify-content-between align-items-center">
   <div>
-    <h1>Inventaris</h1>
+    <h1>Peminjaman</h1>
   </div>
   <div>
     {{-- <a href="">
       <button class="btn btn-lightblue text-white ">Laporan kerusakan</button>
     </a> --}}
-    <a href="">
+    <a href="{{ route('qrcode.render', ['from' => 'peminjaman']) }}">
       <button class="btn btn-darkblue text-white ">Scan Kode QR</button>
     </a>
     <a href="">
       <button class="btn btn-lightgreen text-white">Import CSV</button>
     </a>
-    <a href="">
+    {{-- <a href="">
       <button class="btn btn-grey text-white">Download All</button>
-    </a>
+    </a> --}}
   </div>
 </div>
 
@@ -51,8 +51,8 @@
   <table id="example" class="table table-striped" style="width:100%">
     <thead>
         <tr>
+            <th>No</th>
             <th>Nama barang</th>
-            {{-- <th>Id barang</th> --}}
             <th>Kategori</th>
             <th>Nama Siswa</th>
             <th>Tipe</th>
@@ -61,40 +61,116 @@
         </tr>
     </thead>
     <tbody>
-      @foreach ($data as $item)
+      @forelse ($data as $index => $item)
+      {{-- @if ($item->barang->status === "Baru") --}}
+       {{-- {{ $item->status }} --}}
+       {{-- {{ $item->barang->tipe }} --}}
       <tr>
+          <td>{{ $data->firstItem() + $index }}</td> {{-- Nomor urut global --}}
           <td>{{ $item->barang->nama_barang }}</td>
           <td>
-            @if ($item->barang && $item->barang->kategori === "dipinjam")
+            @if ($item->barang && $item->barang->kategori == 1)
               Dipinjam oleh siswa
-            @elseif ($item->barang && $item->barang->kategori === "milik")
+            @elseif ($item->barang && $item->barang->kategori == 0)
               Milik Sekolah
             @endif
           </td>
           <td>
             {{ $item->barang->nama_siswa }}
           </td>
-          <td>{{ $item->barang->tipe }}</td>
-          <td>{{ $item->barang->status }}</td>
+          <td>
+            @if ($item->barang->tipe == 0)
+              Barang Tetap
+            @elseif ($item->barang->tipe == 1)
+              Barang Berpindah
+            @endif
+          </td>
+          <td>
+            @if ($item->barang->status == 0)
+              Baru
+            @elseif ($item->barang->status == 1)
+              Hilang
+            @elseif ($item->barang->status == 2)
+              Rusak Ringan
+            @elseif ($item->barang->status == 3)
+              Rusak
+            @elseif ($item->barang->status == 4)
+              Diperbarui
+            @endif
+          </td>
+
+         
           <td class="d-flex gap-2">
-              {{-- <a href="{{ route('peminjaman.details', $item->id) }}" class="text-black">
+
+            {{-- {{ $item->barang_id }} --}}
+              <a href="{{ route('peminjaman.show', $item->barang_id) }}" class="text-black">
                   <i class="bi bi-eye"></i>
-              </a> --}}
-              <form action="{{ route('peminjaman.destroy', $item->id) }}" method="POST">
+              </a>
+              <form action="{{ route('peminjaman.destroy', $item->barang->id) }}" method="POST">
                   @csrf
                   @method('DELETE')
                   <button type="submit" style="border: none; background: none;" class="text-black">
                       <i class="bi bi-trash"></i>
                   </button>
               </form>
-              <a href="{{ route('peminjaman.edit', $item->barang->id) }}" class="text-black">
-                  <i class="bi bi-pencil-square"></i>
-              </a>
+              {{-- @if ($item->barang->status == 0 && $item->barang->kategori != 0)
+                <a href="{{ route('peminjaman.edit', $item->barang->id) }}" class="text-black">
+                    <i class="bi bi-pencil-square"></i>
+                </a>
+              @endif --}}
+              @if ($item->barang->status == 0 || $item->barang->status === 4)
+                @if ($item->barang->kategori != 0)
+                  <a href="{{ route('peminjaman.edit', $item->barang->id) }}" class="text-black">
+                      <i class="bi bi-pencil-square"></i>
+                  </a>
+                @endif
+              {{-- @elseif ($item->barang->status == 4 && $item->kategori != 1) 
+                  <a href="{{ route('inventaris.edit', $item->id) }}" class="text-black">
+                      <i class="bi bi-pencil-square"></i>
+                  </a> --}}
+              @endif
           </td>
+
+          
       </tr>
-      @endforeach
+
+      @empty
+        {{-- Jika data kosong --}}
+            <div class="alert alert-info my-2">
+              Tidak ada data tersedia.
+            </div>
+      @endforelse
+      {{-- @endif --}}
     </tbody>
   </table>
+
+  <div class="d-flex justify-content-end mt-3">
+          {{ $data->links('pagination::bootstrap-5') }}
+  </div>
 </div>
 
+<script>
+$(document).ready(function() {
+    $("#search").on("keyup", function () {
+      var value = $(this).val().toLowerCase();
+      let matchCount = 0;
+
+      $("#select-all").prop("checked", false);
+      $("input[name='selected_items[]']").prop("checked", false);
+
+      $("#example tbody tr").not('#no-results').each(function () {
+        const match = $(this).text().toLowerCase().indexOf(value) > -1;
+        $(this).toggle(match);
+        if (match) matchCount++;
+      });
+
+      $("#no-results").toggle(matchCount === 0);
+      updateNomorUrut(); 
+    });
+  });
+
+</script>
+
 @endsection
+
+

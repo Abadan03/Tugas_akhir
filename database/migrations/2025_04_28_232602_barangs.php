@@ -16,14 +16,14 @@ return new class extends Migration
             $table->id();
             $table->string('nama_barang');
             $table->integer('harga_awal');
-            $table->string('kategori');
+            $table->integer('kategori');
             $table->string('nama_siswa')->nullable();
-            $table->string('tipe');
-            $table->string('status');
+            $table->integer('tipe');
+            $table->integer('status');
             // $table->foreignId('barang_rusak_id')->constrained('barang_rusaks')->onDelete('cascade');
             // $table->string('barangrusak_id')->nullable();
             $table->string('keterangan')->nullable();
-            $table->string('kodeQR');
+            $table->string('kodeQR')->nullable();
             $table->string('bukti')->nullable();
             $table->timestamps();
         });

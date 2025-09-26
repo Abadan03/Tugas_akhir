@@ -20,7 +20,7 @@
 
 <div class="container-fluid my-4">
   <div class="d-flex align-items-center gap-2 mb-4">
-    <a href="{{ route('inventaris.index') }}">
+    <a href="{{ route('peminjaman.index') }}">
       <i class="bi bi-arrow-left-square fs-3"></i>
     </a>
     <h4 class="mb-0">Detail Barang</h4>
@@ -81,57 +81,44 @@
       @isset($pembayaran)
         <div>
           <h6 class="fw-semibold mb-1">Biaya Perbaikan :</h6>
-          {{-- <p class="fw-light">Rp. {{ number_format($pembayaran->biaya_perbaikan, 0, ',', '.' ?? '-') }}</p> --}}
-          <p class="fw-light">
-              {{ $pembayaran->biaya_perbaikan ? 'Rp. ' . number_format($pembayaran->biaya_perbaikan, 0, ',', '.') : '-' }}
-          </p>
+          <p class="fw-light">Rp. {{ number_format($pembayaran->biaya_perbaikan, 0, ',', '.') }}</p>
         </div>
       @endisset
       @if ($barang->keterangan)
-        <div>
-          <h6 class="fw-semibold mb-1">Keterangan :</h6>
-          <p class="fw-light">
-            {{ $barang->keterangan }}
-        </div>
+      <div>
+        <h6 class="fw-semibold mb-1">Keterangan :</h6>
+        <p class="fw-light">
+          {{ $barang->keterangan }}
+      </div>
       @endif
       
-      @if ($barang->kodeQR)
-        <div>
-          <h6 class="fw-semibold mb-1">Kode QR</h6>
-          <input type="text" class="visually-hidden" id="display_kodeQR" name="display_kodeQR" value="{{ old('kodeQR', $barang->kodeQR ?? '') }}">
-          <div id="qr-code" class="my-3"></div>
-        </div>
-      @else    
-        <div>
-          <h6 class="fw-semibold mb-1">Kode QR</h6>
-          <p class="fs-6 text-p-grey">Admin belum generate kode QR</p>
-        </div>
-      @endif
+      <div>
+        <h6 class="fw-semibold mb-1">Generate Kode QR</h6>
+        {{-- <p class="fw-light mb-2">Item-#{{ $barang->kodeQR }}</p> --}}
+        <input type="text" class="visually-hidden" id="display_kodeQR" name="display_kodeQR" value="{{ old('kodeQR', $barang->kodeQR ?? '') }}">
+        <div id="qr-code" class="my-3"></div>
+        {{-- <img src="{{ asset('path/to/qr-code.png') }}" alt="QR Code" width="120"> --}}
+      </div>
     </div>
 
     {{-- Kolom Kanan --}}
     <div class="col-md-6 d-flex flex-column align-items-start">
-      <h6 class="fw-semibold mb-2">Bukti :</h6>
-      @isset($barang->bukti)
-        <img src="{{ asset('storage/' . $barang->bukti) }}" alt="Bukti" class="img-fluid mb-4" style="max-height: 250px;">
-      @endisset
+      <div>
+        <h6 class="fw-semibold mb-2">Bukti Pembelian :</h6>
+        @isset($barang->bukti)
+          <img src="{{ asset('storage/' . $barang->bukti) }}" alt="Bukti Pembelian" class="img-fluid mb-4" style="max-height: 250px;">
+        @endisset
 
-      @empty($barang->bukti)
-        <p> tidak ada bukti invoice </p>
-      @endempty
-      
-      {{-- Tombol --}}
-      {{-- <div class="d-flex justify-content-end w-100 gap-2 mt-auto">
-        <a href="{{ route('inventaris.index') }}" class="btn btn-danger">Batal</a>
-        <button class="btn btn-success">Simpan</button>
-      </div> --}}
+        @empty($barang->bukti)
+          <p> tidak ada bukti invoice </p>
+        @endempty
+      </div>
     </div>
+    
   </div>
 </div>
 
-@isset($ihistory)
-  
-@if($history && $history->count())
+@if($history)
   <div class="mt-4">
     <h5 class="fw-bold mb-3">Histori Status Barang</h5>
     <ul class="list-group">
@@ -154,24 +141,13 @@
             <span class="badge bg-secondary">{{ $label }}</span>
           </div>
           <div>Keterangan: {{ $log->keterangan }}</div>
-          <div>Biaya Perbaikan: Rp. {{ number_format($log->biaya_perbaikan, 0, ',', '.') }}</div>
-          @if ($log->bukti_transfer)            
-            <div>
-              <p>
-                Bukti transfer: 
-              </p>
-              <img src="{{ asset('storage/' . $log->bukti_transfer) }}" alt="Gambar tidak ditemukan">
-            </div>
-          @endif
+          <div>Bukti transfer: {{ $log->bukti_transfer }}</div>
         </li>
       @endforeach
     </ul>
   </div>
 @endif
-@endisset
-
 @endsection
-
 
 @push('scripts')
 

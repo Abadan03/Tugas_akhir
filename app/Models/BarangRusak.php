@@ -12,8 +12,9 @@ class BarangRusak extends Model
     protected $fillable = [
         'barang_id',
         'pinjaman_id',
-        'biaya_perbaikan',
-        'keterangan',
+        // 'biaya_perbaikan',
+        // 'keterangan',
+        'surat',
     ];
 
     public function barang()
@@ -24,5 +25,10 @@ class BarangRusak extends Model
     public function pinjaman()
     {
         return $this->belongsTo(Pinjaman::class);
+    }
+
+    public function pembayaran()
+    {
+        return $this->hasMany(Pembayaran::class, 'barang_rusaks_id');
     }
 }
