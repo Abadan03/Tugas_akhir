@@ -149,7 +149,7 @@
       <a href="{{ route('qrcode.render', ['from' => 'inventaris']) }}">
         <button type="button" class="btn btn-darkblue text-white">Scan Kode QR</button>
       </a>
-      <a href="">
+      <a href="{{ route('import.csv') }}">
         <button type="button" class="btn btn-lightgreen text-white">Import CSV</button>
       </a>
       <a href="{{ route('inventaris.create') }}">
@@ -175,9 +175,9 @@
         </tr>
       </thead>
       <tbody>
-        @foreach ($data as $item)
+        @forelse ($data as $index => $item)
         <tr>
-          <td class="nomor-urut"></td>
+          <td>{{ $data->firstItem() + $index }}</td> {{-- Nomor urut global --}}
           <td><input type="checkbox" name="selected_items[]" value="{{ $item->id }}"></td>
           <td>{{ $item->nama_barang }}</td>
           <td>{{ $item->kategori == 1 ? 'Dipinjam oleh siswa' : 'Milik Sekolah' }}</td>
@@ -194,30 +194,32 @@
           </td>
           <td>{{ $item->keterangan ?: '-' }}</td>
           <td class="d-flex gap-2">
-                <a href="{{ route('inventaris.show', $item->id) }}" class="text-black">
-                    <i class="bi bi-eye"></i>
-                </a>
-                {{-- <form action="{{ route('inventaris.destroy', $item->id) }}" method="POST">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" style="border: none; background: none;" class="text-black">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </form> --}}
-                <button type="button" onclick="deleteItem('{{ route('inventaris.destroy', $item->id) }}')" style="border:none; background:none;">
-                  <i class="bi bi-trash"></i>
-                </button>
-                @if (($item->status == 0 || $item->status == 4) && $item->kategori != 1)
-                  <a href="{{ route('inventaris.edit', $item->id) }}" class="text-black">
-                      <i class="bi bi-pencil-square"></i>
-                  </a>
-                @endif
-            </td>
+            <a href="{{ route('inventaris.show', $item->id) }}" class="text-black">
+                <i class="bi bi-eye"></i>
+            </a>
+            <button type="button" onclick="deleteItem('{{ route('inventaris.destroy', $item->id) }}')" style="border:none; background:none;">
+              <i class="bi bi-trash"></i>
+            </button>
+            @if (($item->status == 0 || $item->status == 4) && $item->kategori != 1)
+              <a href="{{ route('inventaris.edit', $item->id) }}" class="text-black">
+                  <i class="bi bi-pencil-square"></i>
+              </a>
+            @endif
+          </td>
         </tr>
-        @endforeach
+        @empty
+          <tr>
+            <td colspan="9" class="text-center">Tidak ada data tersedia.</td>
+          </tr>
+        @endforelse
       </tbody>
-    </table>
 
+      
+
+    </table>
+    <div class="d-flex justify-content-end mt-3">
+          {{ $data->links('pagination::bootstrap-5') }}
+    </div>
     
   </div>
 </form> {{-- <- FORM DITUTUP DI SINI --}}

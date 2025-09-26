@@ -10,7 +10,7 @@
     <span class="input-group-text bg-white border-0">
       <i class="bi bi-search text-muted"></i>
     </span>
-    <input type="text" class="form-control border" style="max-width: 400px;" placeholder="Search nama barang, produk id, kategori">
+    <input type="text" id="search" class="form-control border" style="max-width: 400px;" placeholder="Search nama barang, produk id, kategori">
   </div>
   
   <div>
@@ -41,9 +41,9 @@
     <a href="">
       <button class="btn btn-lightgreen text-white">Import CSV</button>
     </a>
-    <a href="">
+    {{-- <a href="">
       <button class="btn btn-grey text-white">Download All</button>
-    </a>
+    </a> --}}
   </div>
 </div>
 
@@ -51,6 +51,7 @@
   <table id="example" class="table table-striped" style="width:100%">
     <thead>
         <tr>
+            <th>No</th>
             <th>Nama barang</th>
             <th>Kategori</th>
             <th>Nama Siswa</th>
@@ -60,11 +61,12 @@
         </tr>
     </thead>
     <tbody>
-      @foreach ($data as $item)
+      @forelse ($data as $index => $item)
       {{-- @if ($item->barang->status === "Baru") --}}
        {{-- {{ $item->status }} --}}
        {{-- {{ $item->barang->tipe }} --}}
       <tr>
+          <td>{{ $data->firstItem() + $index }}</td> {{-- Nomor urut global --}}
           <td>{{ $item->barang->nama_barang }}</td>
           <td>
             @if ($item->barang && $item->barang->kategori == 1)
@@ -128,11 +130,47 @@
                   </a> --}}
               @endif
           </td>
+
+          
       </tr>
+
+      @empty
+        {{-- Jika data kosong --}}
+            <div class="alert alert-info my-2">
+              Tidak ada data tersedia.
+            </div>
+      @endforelse
       {{-- @endif --}}
-      @endforeach
     </tbody>
   </table>
+
+  <div class="d-flex justify-content-end mt-3">
+          {{ $data->links('pagination::bootstrap-5') }}
+  </div>
 </div>
 
+<script>
+$(document).ready(function() {
+    $("#search").on("keyup", function () {
+      var value = $(this).val().toLowerCase();
+      let matchCount = 0;
+
+      $("#select-all").prop("checked", false);
+      $("input[name='selected_items[]']").prop("checked", false);
+
+      $("#example tbody tr").not('#no-results').each(function () {
+        const match = $(this).text().toLowerCase().indexOf(value) > -1;
+        $(this).toggle(match);
+        if (match) matchCount++;
+      });
+
+      $("#no-results").toggle(matchCount === 0);
+      updateNomorUrut(); 
+    });
+  });
+
+</script>
+
 @endsection
+
+

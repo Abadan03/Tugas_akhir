@@ -33,7 +33,7 @@ class InventoryController extends Controller
         //
         // $data = Barang::all();
         Paginator::useBootstrap(); // Tambahkan ini
-        $data = Barang::paginate(10);
+        $data = Barang::paginate(20);
         
         return view('admin.inventory.index', compact('data')); // kirim ke view
     }
@@ -150,7 +150,7 @@ class InventoryController extends Controller
         // ->get();
         $history = itemStatusLog::where('barang_id', $id)
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->get(); // ?? collect();
 
         // return $history;
 
@@ -167,8 +167,8 @@ class InventoryController extends Controller
         // Ambil pembayaran yang terkait barang ini melalui barang rusak
         $pembayaran = Pembayaran::whereHas('barangRusak', function ($query) use ($id) {
             $query->where('barang_id', $id);
-        })->with('barangRusak.barang')->get();
-        return dd($pembayaran);
+        })->with('barangRusak.barang')->first();
+        // return dd($pembayaran);
 
         return view('admin.inventory.details', compact('barang', 'pembayaran'));
     }
@@ -287,10 +287,30 @@ class InventoryController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
-    {
-        //
-    }
+    public function destroy($id)
+        {
+            $barang = Barang::with('barangRusaks.pembayaran', 'itemStatusLogs')->findOrFail($id);
+
+            // Hapus semua pembayaran (kalau ada)
+            if ($barang->barangRusaks->count()) {
+                foreach ($barang->barangRusaks as $rusak) {
+                    if ($rusak->pembayaran()->exists()) {
+                        $rusak->pembayaran()->delete();
+                    }
+                }
+                $barang->barangRusaks()->delete();
+            }
+
+            // Hapus status log (kalau ada)
+            if ($barang->itemStatusLogs->count()) {
+                $barang->itemStatusLogs()->delete();
+            }
+
+            // Hapus barang
+            $barang->delete();
+
+            return redirect()->route('inventaris.index')->with('success', 'Barang berhasil dihapus.');
+        }
 
 
     public function showFromQR()
@@ -299,5 +319,64 @@ class InventoryController extends Controller
         // $barangRusaks = BarangRusak::where('barang_id', $id)->with('barang')->get();
 
         return view('admin.inventory.scan-QR');
+    }
+
+    // di InventoryController paling bawah
+    public function importCSV()
+    {
+        return view('admin.inventory.import'); // tampilan upload form
+    }
+
+    public function handleImportCSV(Request $request)
+    {
+        $request->validate([
+            'csv_file' => 'required|file|mimes:csv,txt|max:2048',
+        ]);
+
+        $file = $request->file('csv_file');
+        $handle = fopen($file->getPathname(), "r");
+        $header = fgetcsv($handle, 1000, ","); // Ambil header csv
+
+        $count = 0;
+        while (($row = fgetcsv($handle, 1000, ",")) !== FALSE) {
+            $data = array_combine($header, $row);
+
+            $barang = Barang::create([
+                'nama_barang' => $data['nama_barang'],
+                'kategori' => $data['kategori'],
+                'nama_siswa' => $data['nama_siswa'] ?? null,
+                'tipe' => $data['tipe'],
+                'status' => $data['status'],
+                'harga_awal' => $data['harga_awal'] ?? 0,
+                'kodeQR' => null, // sementara null, nanti update
+                'bukti' => null,
+            ]);
+
+            // generate kodeQR otomatis setelah tahu id
+            $barang->update([
+                'kodeQR' => json_encode(['id' => (string) $barang->id])
+            ]);
+
+            // kalau kategori = 1 otomatis masuk ke tabel pinjamans
+            if ((int)$data['kategori'] === 1) {
+                Pinjaman::create([
+                    'barang_id' => $barang->id,
+                ]);
+            }
+
+            // kalau status != 0 dan != 4 otomatis masuk ke barang_rusaks
+            if ((int)$data['status'] !== 0 && (int)$data['status'] !== 4) {
+                BarangRusak::create([
+                    'barang_id' => $barang->id,
+                    'pinjaman_id' => null,
+                    'surat' => null, // karena saat import CSV belum ada file
+                ]);
+            }
+
+            $count++;
+        }
+        fclose($handle);
+
+        return redirect()->route('inventaris.index')->with('success', $count.' Barang berhasil diimport.');
     }
 }

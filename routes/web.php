@@ -16,11 +16,14 @@ use App\Http\Controllers\ExportPDFController;
 Route::middleware('auth:sanctum')->group(function () {
     
     Route::get('/dashboard', [UserController::class, 'homepage'])->name('dashboard');
+    Route::get('/dashboard/details/{id}', [UserController::class, 'details'])->name('dashboard.details');
 
     // Inventarory Routes
     Route::resource('inventaris', InventoryController::class);
     Route::get('inventaris/details/{id}', [InventoryController::class, 'details'])->name('inventaris.details');
-    // Route::get('/qrcode/', [InventoryController::class, 'showFromQR'])->name('qrcode.render');
+    // IMPORT CSV
+    Route::get('importCSV', [InventoryController::class, 'importCSV'])->name('import.csv');
+    Route::post('importCSV', [InventoryController::class, 'handleImportCSV'])->name('import.csv.handle');
     
     // Loan Routes
     Route::resource('peminjaman', LoanController::class);
@@ -31,6 +34,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/qrcode/update/{id}', [QRCodeController::class, 'update'])->name('qrcode.update');
 
 
+    // PEMBAYARAN
     Route::resource('pembayaran', PaymentController::class);
 
 
@@ -56,7 +60,12 @@ Route::get('/register', function () {
 
 
 // Route::get('/', function () {
-//     return view('welcome');
+//     return view('');
 // });
 
 // Route::get('/', [AdminController::class, 'loginpage'])->name('/');
+
+Route::get('/', function () {
+    return redirect()->route('login');
+});
+

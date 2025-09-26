@@ -10,7 +10,7 @@
       <span class="input-group-text bg-white border-0">
         <i class="bi bi-search text-muted"></i>
       </span>
-      <input type="text" class="form-control border" style="max-width: 400px;" placeholder="Search nama barang, produk id, kategori">
+      <input type="text" id="search" class="form-control border" style="max-width: 400px;" placeholder="Search nama barang, produk id, kategori">
     </div>
     
     <div>
@@ -28,7 +28,7 @@
 
   <div class="container-fluid d-flex justify-content-between align-items-center">
     <div>
-      <h1>Inventaris</h1>
+      <h1>Pembayaran</h1>
     </div>
     <div>
       {{-- <a href="">
@@ -40,9 +40,9 @@
       <a href="">
         <button class="btn btn-lightgreen text-white">Import CSV</button>
       </a>
-      <a href="">
+      {{-- <a href="">
         <button class="btn btn-grey text-white">Download All</button>
-      </a>
+      </a> --}}
     </div>
   </div>
 
@@ -50,6 +50,7 @@
     <table id="example" class="table table-striped" style="width:100%">
       <thead>
           <tr>
+              <th>No</th>
               <th>Nama Barang</th>
               {{-- <th>Id barang</th> --}}
               <th>Kategori</th>
@@ -63,11 +64,12 @@
       </thead>
       <tbody>
         {{-- {{ $data }} --}}
-        @forelse ($data as $item)
+        @forelse ($data as $index => $item)
         {{-- {{ 'ini barang_id :' . $item->barang_id }}
         {{ 'ini status :' . $item->status }}  --}}
         {{-- {{ $item }} --}}
         <tr>
+            <td>{{ $data->firstItem() + $index }}</td>
             <td>{{ $item->nama_barang }}</td>
             <td>
             @if ($item && $item->kategori == 1)
@@ -129,17 +131,39 @@
         </tr>
         @empty
         {{-- Jika data kosong --}}
-        <tr>
-          <td colspan="7" class="text-center">
             <div class="alert alert-info my-2">
               Tidak ada data tersedia.
             </div>
-          </td>
-        </tr>
         @endforelse
       </tbody>
     </table>
+
+    <div class="d-flex justify-content-end mt-3">
+        {{ $data->links('pagination::bootstrap-5') }}
+    </div>
   </div>
+
+  <script>
+    $(document).ready(function() {
+        $("#search").on("keyup", function () {
+          var value = $(this).val().toLowerCase();
+          let matchCount = 0;
+
+          $("#select-all").prop("checked", false);
+          $("input[name='selected_items[]']").prop("checked", false);
+
+          $("#example tbody tr").not('#no-results').each(function () {
+            const match = $(this).text().toLowerCase().indexOf(value) > -1;
+            $(this).toggle(match);
+            if (match) matchCount++;
+          });
+
+          $("#no-results").toggle(matchCount === 0);
+          updateNomorUrut(); 
+        });
+      });
+
+  </script>
 
 
   @endsection

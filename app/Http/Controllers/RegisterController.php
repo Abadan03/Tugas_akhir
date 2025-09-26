@@ -6,9 +6,11 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\BaseController as BaseController;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use Validator;
+// use Validator;
 use Exception;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Validator;
+
 
 class RegisterController extends Controller
 {
@@ -74,6 +76,7 @@ class RegisterController extends Controller
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',
         ])->onlyInput('email');
+        
 
 
         // $credentials = $request->only('email', 'password');

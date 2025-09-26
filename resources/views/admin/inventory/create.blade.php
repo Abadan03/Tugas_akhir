@@ -85,7 +85,7 @@
       </div> --}}
 
       <div class="mb-3">
-        <label for="bukti" class="form-label">Bukti Pembelian :</label>
+        <label for="bukti" class="form-label">Bukti :</label>
         <input type="file" class="form-control" id="bukti" name="bukti">
       </div>
 

@@ -26,4 +26,9 @@ class BarangRusak extends Model
     {
         return $this->belongsTo(Pinjaman::class);
     }
+
+    public function pembayaran()
+    {
+        return $this->hasMany(Pembayaran::class, 'barang_rusaks_id');
+    }
 }

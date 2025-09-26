@@ -15,6 +15,9 @@ use App\Models\BarangRusak;
 use App\Models\Pembayaran;
 use App\Models\itemStatusLog;
 
+
+use Illuminate\Pagination\Paginator;
+
 class LoanController extends Controller
 {
     /**
@@ -23,8 +26,10 @@ class LoanController extends Controller
     public function index()
     {
         //
-        $data = Pinjaman::with('barang')->get();
+        Paginator::useBootstrap(); // Tambahkan ini
+        // $data = Pinjaman::with('barang')->get();
         // $keterangan = BarangRusak::findOrFail();
+        $data = Pinjaman::with('barang')->paginate(20);
         // return dd($data);
 
         return view('admin.loan.index', compact('data'));

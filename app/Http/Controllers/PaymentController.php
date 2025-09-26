@@ -15,6 +15,9 @@ use App\Models\Pembayaran;
 use App\Models\BarangRusak;
 use App\Models\itemStatusLog;
 
+
+use Illuminate\Pagination\Paginator;
+
 class PaymentController extends Controller
 {
     /**
@@ -76,6 +79,9 @@ class PaymentController extends Controller
             // )
             // ->get();
 
+        Paginator::useBootstrap(); // Tambahkan ini
+
+
             $data = DB::table('barangs')
             ->join(DB::raw('
                 (
@@ -106,9 +112,12 @@ class PaymentController extends Controller
                 'barangs.keterangan',
                 'barangs.status'
             )
-            ->get();
+            // ->get();
+            ->paginate(20);
+
         
-            // $data = Barang::whereNotIn('status', [0,4])->with('barangRusak')->get();
+        
+        // $data = Barang::whereNotIn('status', [0,4])->with('barangRusak')->get();
 
         // return dd($data);
 

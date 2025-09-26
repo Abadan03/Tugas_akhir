@@ -134,6 +134,16 @@ class QRCodeController extends Controller
 
         // return response()->json(['message' => 'Barang berhasil diperbarui']);
         return response()->json(['ok' => true, 'data' => $validated]);
+        // Respon sesuai jenis request
+        // if ($request->expectsJson()) {
+        //     return response()->json([
+        //         'ok' => true,
+        //         'message' => 'Barang berhasil diperbarui',
+        //         'data' => $barang
+        //     ], 200);
+        // }
+        // return redirect()->route('qrcode.render')->with('success', 'Update barang telah dibarui');
+        // ->with('success', 'Update barang telah dibarui');
 
     }
 }

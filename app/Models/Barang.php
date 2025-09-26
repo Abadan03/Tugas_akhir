@@ -32,4 +32,14 @@ class Barang extends Model
     {
         return $this->hasOne(BarangRusak::class);
     }
+
+    public function barangRusaks()
+    {
+        return $this->hasMany(BarangRusak::class, 'barang_id');
+    }
+
+    public function itemStatusLogs()
+    {
+        return $this->hasMany(ItemStatusLog::class, 'barang_id');
+    }
 }

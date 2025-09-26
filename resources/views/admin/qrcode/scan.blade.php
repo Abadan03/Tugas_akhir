@@ -10,10 +10,14 @@
   </div>
 
   <p class="text-muted">Pastikan QR code jelas, tidak buram, dan di tengah frame.</p>
+  <a href="{{ route('qrcode.render') }}" class="text-warning">
+     {{-- <a href="{{ route('inventaris.index') }}"> --}}
+    Klik disini untuk scan kembali
+  </a>
   <div id="reader" class="my-4 shadow-sm rounded border border-success" style="width: 100%; max-width: 800px; margin: auto;"></div>
   <div id="scan-result" class="mt-4"></div>
 </div>
-
+@include('layouts.flash-message')
 <!-- Modal Edit -->
 <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
   <div class="modal-dialog">
@@ -184,6 +188,24 @@ document.addEventListener("DOMContentLoaded", function () {
       .then(data => {
         alert(data.message || 'Berhasil diupdate!');
         bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+
+        // 🔄 Ambil ulang data yang sudah diupdate
+        fetch(`/qrcode/fetch/${id}`)
+          .then(res => res.json())
+          .then(barang => {
+            resultContainer.innerHTML = `
+              <ul class="list-group">
+                <li class="list-group-item"><strong>ID:</strong> ${barang.id}</li>
+                <li class="list-group-item"><strong>Nama Barang:</strong> ${barang.nama_barang}</li>
+                <li class="list-group-item"><strong>Kategori:</strong> ${barang.kategori_label}</li>
+                <li class="list-group-item"><strong>Harga Awal:</strong> Rp${Number(barang.harga_awal).toLocaleString()}</li>
+                <li class="list-group-item"><strong>Nama Siswa:</strong> ${barang.nama_siswa ?? '-'}</li>
+                <li class="list-group-item"><strong>Tipe:</strong> ${barang.tipe_label}</li>
+                <li class="list-group-item"><strong>Status:</strong> ${barang.status_label}</li>
+                <li class="list-group-item"><strong>Keterangan:</strong> ${barang.keterangan}</li>
+                <button type="button" class="btn btn-success" data-id="${barang.id}" id="btn-edit-barang">Edit</button>
+              </ul>`;
+          });
       })
       .catch(err => alert("Terjadi kesalahan saat update: " + err.message));
     });
