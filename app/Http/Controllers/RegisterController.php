@@ -79,22 +79,7 @@ class RegisterController extends Controller
         
 
 
-        // $credentials = $request->only('email', 'password');
-        // if (!Auth::attempt($credentials)) {
-        //     return response()->json([
-        //         'message' => 'Invalid login details!'
-        //     ], 401);
-        // }
-
-        // $user = User::where('email', $request->email)->firstOrFail();
-
-        // $token = $user->createToken('auth_token')->plainTextToken;
-
-        // return response()->json([
-        //     'message' => 'Login successful',
-        //     'access_token' => $token,
-        //     'token_type' => 'Bearer'
-        // ]);
+        
 
     }
 
