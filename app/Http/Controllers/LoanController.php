@@ -13,6 +13,10 @@ use App\Models\Pinjaman;
 use App\Models\Barang;
 use App\Models\BarangRusak;
 use App\Models\Pembayaran;
+use App\Models\ItemMasters;
+use App\Models\CategoryMaster;
+use App\Models\StatusMaster;
+use App\Models\TypeMaster;
 use App\Models\itemStatusLog;
 
 
@@ -29,7 +33,11 @@ class LoanController extends Controller
         Paginator::useBootstrap(); // Tambahkan ini
         // $data = Pinjaman::with('barang')->get();
         // $keterangan = BarangRusak::findOrFail();
-        $data = Pinjaman::with('barang')->paginate(20);
+        // $data = Pinjaman::with('barang')->paginate(20);
+        // $data = Barang::with(['kategori', 'status', 'tipe', 'itemMaster'])->paginate(20);
+        $data = Barang::with(['kategori', 'status', 'tipe', 'itemMaster'])
+            ->where('kategori_id', 2)
+            ->paginate(20);
         // return dd($data);
 
         return view('admin.loan.index', compact('data'));
@@ -60,6 +68,7 @@ class LoanController extends Controller
         //
         $barang = Barang::findOrFail($id);
         // return dd($barang); 
+        
 
         // Ambil barang rusak yang berhubungan dengan barang ini
         $barangRusaks = BarangRusak::where('barang_id', $id)->with('barang')->get();
@@ -74,13 +83,13 @@ class LoanController extends Controller
                 'barang_rusaks.surat as surat',
                 'barangs.nama_barang as nama_barang',
                 'barangs.nama_siswa as nama_siswa',
-                'barangs.kategori as kategori',
-                'barangs.tipe as tipe',
+                'barangs.kategori_id as kategori_id',
+                'barangs.tipe_id as tipe_id',
                 'barangs.harga_awal as harga_awal',
                 'barangs.kodeQR as kodeQR',
                 'barangs.bukti as bukti',
                 'barangs.keterangan as keterangan',
-                'barangs.status as status',
+                'barangs.status_id as status_id',
                 'pembayaran.id as pembayaran_id',
                 'pembayaran.barang_rusaks_id as barang_rusak_id',
                 'pembayaran.biaya_perbaikan as biaya_perbaikan'
@@ -103,14 +112,17 @@ class LoanController extends Controller
         // $data = Pinjaman::with('barang')->get();
         $barang = Barang::findOrFail($id);
 
-        $pinjaman = Pinjaman::where('barang_id', $id)->firstOrFail();
+        $pinjaman = Pinjaman::where('barang_id', $id)->first();
+        $categories = CategoryMaster::all(); // tambahkan baris ini
+        $statuses = StatusMaster::all(); // kalau kamu juga pakai status di form edit
+        $types = TypeMaster::all(); // kalau kamu juga pakai tipe
 
         // return dd([
         //     'barang' => $barang,
         //     'pinjaman' => $pinjaman
         // ]);
 
-        return view('admin.loan.edit', compact('barang', 'pinjaman'));
+        return view('admin.loan.edit', compact('barang', 'pinjaman', 'categories', 'types', 'statuses'));
     }
 
     /**
@@ -121,6 +133,7 @@ class LoanController extends Controller
         //
         $barang = Barang::findOrFail($id); 
         $pinjaman = Pinjaman::where('barang_id', $id)->first(); 
+        // $pinjaman = Pinjaman::firstOrCreate(['barang_id' => $id]);
         // return dd($request->all());
 
         if ($request->hasFile('surat')) {
@@ -141,18 +154,18 @@ class LoanController extends Controller
         }
 
         // Update barang - ini selalu dijalankan
-        $barang->status = $request->status;
+        $barang->status_id = $request->status_id;
         $barang->keterangan = $request->keterangan;
         $barang->nama_siswa = $request->nama_siswa;
         $barang->kodeQR = $request->kodeQR;
-        $barang->tipe = $request->tipe;
-        $barang->kategori = $request->kategori_display;
+        $barang->tipe_id = $request->tipe_id;
+        $barang->kategori_id = $request->kategori_id;
 
          // Cek apakah kategori milik sekolah atau dipinjam siswa
-        if ($request->kategori_display == 1) {
-            // Jika dipinjam siswa, simpan nama siswa
-            $barang->nama_siswa = $request->nama_siswa;
-        } else {
+            if ($request->kategori_id == 2) {
+                // Jika dipinjam siswa, simpan nama siswa
+                $barang->nama_siswa = $request->nama_siswa;
+            } else {
             // Jika milik sekolah, kosongkan nama siswa
             // $barang->delete();
             $barang->nama_siswa = null;
@@ -164,9 +177,9 @@ class LoanController extends Controller
                 $barangRusak->save();
             }
 
-            if ($pinjaman) {
-                $pinjaman->delete(); // HAPUS DATA DARI TABEL pinjamans
-            }
+            // if ($pinjaman) {
+            //     $pinjaman->delete(); 
+            // }
         }
 
         // Upload bukti pembelian jika ada

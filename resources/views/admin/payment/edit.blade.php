@@ -32,24 +32,37 @@
   </div>
 </div>
 
-<form action="{{ route('pembayaran.update', $items->barang->id) }}" method="POST" enctype="multipart/form-data" class="p-4 bg-white" id="submit-form">
+<form action="{{ route('pembayaran.update', $barangRusak->barang->id) }}" method="POST" enctype="multipart/form-data" class="p-4 bg-white" id="submit-form">
   @csrf
   @method('PUT')
   {{-- @if ($barang->status == 0) --}}
     {{-- <h1>assd</h1> --}}
     <div class="mb-3">
       <label for="nama_barang" class="form-label">Nama Barang<span class="text-danger">*</span></label>
-      <input type="text" class="form-control" id="nama_barang_display" name="nama_barang_display" value="{{ $items->barang->nama_barang }}" required disabled>
-      <input type="hidden" class="form-control" id="nama_barang" name="nama_barang" value="{{ $items->barang->nama_barang }}">
+      {{-- <input type="text" class="form-control" id="nama_barang" name="nama_barang" value="{{ $items->nama_barang }}" required disabled> --}}
+      <input type="hidden" class="form-control" id="nama_barang" name="nama_barang" value="{{ $items->nama_barang }}">
+      <select class="form-select" id="items_id" name="items_id">
+        @foreach ($itemsMaster as $item)
+            <option value="{{ $item->id }}">{{ $item->nama_barang }}</option>
+        @endforeach
+      </select>
     </div>
+
+    {{-- {{ $items }} --}}
   
     <div class="mb-3">
-      <label for="kategori" class="form-label">Kategori <span class="text-danger">*</span></label>
-      <select class="form-select" id="kategori_display" name="kategori_display" required disabled>
-        <option value="0" {{ $items->barang->kategori == 0 ? 'selected' : '' }}>Milik Sekolah</option>
-        <option value="1" {{ $items->barang->kategori == 1 ? 'selected' : '' }}>Dipinjam oleh siswa</option>
+      <label for="kategori_id" class="form-label">Kategori <span class="text-danger">*</span></label>
+      <select class="form-select" id="kategori_id" name="kategori_id" required disabled>
+        {{-- <option value="0" {{ $items->barang->kategori == 0 ? 'selected' : '' }}>Milik Sekolah</option>
+        <option value="1" {{ $items->barang->kategori == 1 ? 'selected' : '' }}>Dipinjam oleh siswa</option> --}}
+        @foreach($categories as $category)
+            <option value="{{ $category->id }}" data-nama="{{ strtolower($category->nama_kategori) }}" 
+              {{ $barang->kategori_id == $category->id ? 'selected' : '' }}>
+              {{ $category->nama_kategori }}
+            </option>
+        @endforeach
       </select>
-      <input type="hidden" name="kategori" id="kategori" value="{{ $items->barang->kategori }}">
+      <input type="hidden" name="kategori" id="kategori" value="{{ $items->barang->kategori_id }}">
     </div>
 
     @if ($items->barang->nama_siswa)
@@ -60,22 +73,42 @@
     @endif
   
     <div class="mb-3">
-      <label for="tipe" class="form-label">Tipe <span class="text-danger">*</span></label>
-      <select class="form-select" id="tipe_display" name="tipe_display" required disabled>
-        <option value="1" {{ $items->barang->tipe == 1 ? 'selected' : '' }}>Barang berpindah</option>
-        <option value="0" {{ $items->barang->tipe == 0 ? 'selected' : '' }}>Barang tetap</option>
+      <label for="tipe_id" class="form-label">Tipe <span class="text-danger">*</span></label>
+      <select class="form-select" id="tipe_id" name="tipe_id" required>
+        {{-- <option value="1" {{ $items->barang->tipe == 1 ? 'selected' : '' }}>Barang berpindah</option>
+        <option value="0" {{ $items->barang->tipe == 0 ? 'selected' : '' }}>Barang tetap</option> --}}
+         {{-- @foreach($types as $type)
+            <option value="{{ $type->id }}" 
+            {{ $itemsMaster->tipe_id == $type->id ? 'selected' : '' }}>
+              {{ $type->nama_tipe }}
+            </option>
+          @endforeach --}}
+          @foreach($types as $type)
+            <option value="{{ $type->id }}" 
+              {{ $barang->tipe_id == $type->id ? 'selected' : '' }}>
+              {{ $type->nama_tipe }}
+            </option>
+          @endforeach
+          {{-- {{ var_dump($types) }} --}}
       </select>
-      <input type="hidden" name="tipe" id="tipe" value="{{ $items->barang->tipe }}">
+      {{-- <input type="hidden" name="tipe" id="tipe" value="{{ $items->barang->tipe }}"> --}}
     </div>
   
     <div class="mb-3">
-      <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
-      <select class="form-select" id="status" name="status" required disabled>
-        <option value="0" {{ $items->barang->status == 0 ? 'selected' : '' }}>Baru</option>
+      <label for="status_id" class="form-label">Status <span class="text-danger">*</span></label>
+      <select class="form-select" id="status_id" name="status_id" required>
+        {{-- <option value="0" {{ $items->barang->status == 0 ? 'selected' : '' }}>Baru</option>
         <option value="1" {{ $items->barang->status == 1 ? 'selected' : '' }}>Hilang</option>
         <option value="2" {{ $items->barang->status == 2 ? 'selected' : '' }}>Rusak ringan</option>
         <option value="3" {{ $items->barang->status == 3 ? 'selected' : '' }}>Rusak</option>
-        <option value="4" {{ $items->barang->status == 4 ? 'selected' : '' }}>Diperbarui</option>
+        <option value="4" {{ $items->barang->status == 4 ? 'selected' : '' }}>Diperbarui</option> --}}
+        @foreach ($statuses as $status)
+            <option 
+              value="{{ $status->id }}" 
+              {{ $barang->status_id == $status->id ? 'selected' : '' }}>
+              {{ $status->nama_status }}
+            </option>
+        @endforeach
       </select>
     </div>
 
@@ -191,7 +224,7 @@
 @push('scripts')
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    const statusElement = document.getElementById("status");
+    const statusElement = document.getElementById("status_id");
     const keteranganContainer = document.getElementById("keterangan_container");
     const suratContainer = document.getElementById("surat_container");
     
@@ -207,7 +240,7 @@
       keteranganContainer.innerHTML = "";
       suratContainer.innerHTML = "";
 
-      if (statusValue !== "0") {
+      if (statusValue !== "1") {
         keteranganContainer.innerHTML = `
           <div class="mb-3" id="field-keterangan">
             <label for="keterangan" class="form-label">Keterangan <span class="text-danger">*</span></label>

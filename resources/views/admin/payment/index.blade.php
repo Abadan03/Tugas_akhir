@@ -71,13 +71,14 @@
         <tr>
             <td>{{ $data->firstItem() + $index }}</td>
             <td>{{ $item->nama_barang }}</td>
-            <td>
-            @if ($item && $item->kategori == 1)
+            {{-- <td>
+            @if ($item && $item->kategori_id == 1)
             Dipinjam oleh siswa
-            @elseif ($item && $item->kategori == 0)
+            @elseif ($item && $item->kategori_id == 0)
                 Milik Sekolah
             @endif
-            </td>
+            </td> --}}
+            <td>{{ $item->nama_kategori ?? ''}}</td>
             @if ($item->nama_siswa)
               <td>
                 {{ $item->nama_siswa }}
@@ -87,14 +88,15 @@
                 -
               </td>
             @endif
-            <td>
-            @if ($item->tipe == 0)
+            {{-- <td>
+            @if ($item->tipe_id == 0)
               Barang Tetap
-            @elseif ($item->tipe == 1)
+            @elseif ($item->tipe_id == 1)
               Barang Berpindah
             @endif
-            </td>
-            <td>
+            </td> --}}
+            <td>{{ $item->nama_tipe ?? '' }}</td>
+            {{-- <td>
             @if ($item->status == 0)
               Baru
             @elseif ($item->status == 1)
@@ -106,6 +108,9 @@
             @elseif ($item->status == 4)
               Diperbarui
             @endif
+            </td> --}}
+            <td>
+              {{ $item->nama_status ?? '' }}
             </td>
             <td>{{ $item->keterangan }}</td>
             {{-- <td>{{ $item->harga }}</td> --}}
@@ -115,14 +120,15 @@
                     <i class="bi bi-eye"></i>
                   </a>
                 @endif --}}
-                <form action="{{ route('pembayaran.destroy', $item->barang_rusaks_id) }}" method="POST">
+                {{-- <form action="{{ route('pembayaran.destroy', $item->barang_rusaks_id) }}" method="POST">
                     @csrf
                     @method('DELETE')
                     <button type="submit" style="border: none; background: none;" class="text-black">
                         <i class="bi bi-trash"></i>
                     </button>
-                </form>
-                @if ($item->status != 4)
+                </form> --}}
+                {{-- @if ($item->status_id != 4) --}}
+                @if ($item->status_id != 1 && $item->status_id != 5)
                   <a href="{{ route('pembayaran.edit', $item->barang_rusaks_id) }}" class="text-black">
                       <i class="bi bi-pencil-square"></i>
                   </a>
