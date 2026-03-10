@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('nama_siswa')->nullable();
             $table->integer('tipe');
             $table->integer('status');
+            $table->integer('item');
             // $table->foreignId('barang_rusak_id')->constrained('barang_rusaks')->onDelete('cascade');
             // $table->string('barangrusak_id')->nullable();
             $table->string('keterangan')->nullable();

@@ -15,18 +15,18 @@
         </div>
         <div class="col-md-3 border-end">
             <p class="fw-semibold fs-6 mb-1" style="color: #D77D11;">Barang Perbaikan</p>
-            <h5 class="fw-bold mb-1">{{ $barangPerbaikan }}</h5>
-            <p class="text-muted small">Total {{ $barangPerbaikan }} Barang Perbaikan</p>
+            {{-- <h5 class="fw-bold mb-1">{{ $barangPerbaikan }}</h5>
+            <p class="text-muted small">Total {{ $barangPerbaikan }} Barang Perbaikan</p> --}}
         </div>
         <div class="col-md-3 border-end">
             <p class="fw-semibold fs-6 mb-1" style="color: #A249C0;">Butuh Diganti</p>
-            <h5 class="fw-bold mb-1">{{ $butuhDiganti }}</h5>
-            <p class="text-muted small">Total {{ $butuhDiganti }} barang perlu diganti</p>
+            {{-- <h5 class="fw-bold mb-1">{{ $butuhDiganti }}</h5>
+            <p class="text-muted small">Total {{ $butuhDiganti }} barang perlu diganti</p> --}}
         </div>
         <div class="col-md-3">
             <p class="fw-semibold fs-6 mb-1" style="color: #FF5A5F;">Total Barang yang Dipinjamkan</p>
-            <h5 class="fw-bold mb-1">{{ $dipinjamkan }}</h5>
-            <p class="text-muted small">Total {{ $dipinjamkan }} barang milik siswa</p>
+            {{-- <h5 class="fw-bold mb-1">{{ $dipinjamkan }}</h5>
+            <p class="text-muted small">Total {{ $dipinjamkan }} barang milik siswa</p> --}}
         </div>
     </div>
 
@@ -52,7 +52,7 @@
                     {{-- <td>{{ $item->nama_barang }}</td> --}}
                     <td>{{ $item->nama_siswa ?: '-' }}</td>
                     {{-- <td>{{ $item->product_id }}</td> --}}
-                    <td>{{ $item->kategori == 1 ? 'Dipinjam oleh siswa' : 'Milik Sekolah' }}</td>
+                    {{-- <td>{{ $item->kategori == 1 ? 'Dipinjam oleh siswa' : 'Milik Sekolah' }}</td>
                     <td>{{ $item->tipe == 0 ? 'Barang Tetap' : 'Barang Berpindah' }}</td>
                     <td>
                         @switch($item->status)
@@ -63,7 +63,10 @@
                             @case(4) Diperbarui @break
                             @default - @break
                         @endswitch
-                    </td>
+                    </td> --}}
+                    <td>{{ $item->kategori->nama_kategori ?? '-' }}</td>
+                    <td>{{ $item->tipe->nama_tipe ?? '-' }}</td>
+                    <td>{{ $item->status->nama_status ?? '-' }}</td>
                     <td>
                         <a href="{{ route('dashboard.details', $item->id) }}" class="btn btn-sm btn-primary">Details</a>
                     </td>

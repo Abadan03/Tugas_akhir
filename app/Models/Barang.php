@@ -14,13 +14,14 @@ class Barang extends Model
     protected $fillable = [
         'nama_barang',
         'harga_awal',
-        'kategori',
+        'kategori_id',
         'nama_siswa',
-        'tipe',
-        'status',
+        'tipe_id',
+        'status_id',
+        'items_id',
         'kodeQR',
         'bukti',
-        'keterangan'
+        'keterangan',
     ];
 
     public function pinjamans()
@@ -39,7 +40,28 @@ class Barang extends Model
     }
 
     public function itemStatusLogs()
-    {
-        return $this->hasMany(ItemStatusLog::class, 'barang_id');
-    }
+        {
+            return $this->hasMany(ItemStatusLog::class, 'barang_id');
+        }
+
+        public function kategori()
+        {
+            return $this->belongsTo(CategoryMaster::class, 'kategori_id');
+        }
+
+    public function status()
+        {
+            return $this->belongsTo(StatusMaster::class, 'status_id');
+        }
+
+    public function tipe()
+        {
+            return $this->belongsTo(TypeMaster::class, 'tipe_id');
+        }
+        
+        public function itemMaster()
+        {
+            return $this->belongsTo(ItemMasters::class, 'items_id');
+        }
+
 }

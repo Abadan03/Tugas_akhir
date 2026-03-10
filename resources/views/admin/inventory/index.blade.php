@@ -2,118 +2,6 @@
 
 @section('content')
 
-{{-- <div class="container-fluid d-flex justify-content-between align-items-center py-3 px-5 border-3 border-bottom rounded-3">
-  <div class="input-group">
-    <span class="input-group-text bg-white border-0">
-      <i class="bi bi-search text-muted"></i>
-    </span>
-    <input type="text" class="form-control border" style="max-width: 400px;" placeholder="Search nama barang, produk id, kategori">
-  </div>
-  
-  <div>
-    @if (Auth()->user())
-        {{ Auth()->user()->name }}
-    @endif
-  </div>
-</div>
-@include('layouts.flash-message')
-
-<div class="py-4 px-3">
-  <h2 class="fw-bold">Inventaris</h2>
-  <h4 class="fw-semibold mb-4">Keseluruhan inventaris</h4>
-</div>
-
-
-<div class="container-fluid d-flex justify-content-between align-items-center">
-  <div>
-    <h1>Inventaris</h1>
-  </div>
-  <div>
-    <a href="">
-      <button class="btn btn-skyblue">Print Kode QR</button>
-    </a>
-    <a href="{{ route('qrcode.render', ['from' => 'inventaris']) }}">
-      <button class="btn btn-darkblue text-white ">Scan Kode QR</button>
-    </a>
-    <a href="">
-      <button class="btn btn-lightgreen text-white">Import CSV</button>
-    </a>
-    <a href="{{ route('inventaris.create') }}">
-      <button class="btn btn-skyblue">Tambah Barang</button>
-    </a>
-  </div>
-</div>
-
-<div class="container-fluid">
-  <table id="example" class="table table-striped" style="width:100%">
-    <thead>
-        <tr>
-            <th>Nama barang</th>
-            <th>Kategori</th>
-            <th>Tipe</th>
-            <th>Status</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-      @foreach ($data as $item)
-      <tr>
-          <td>{{ $item->nama_barang }}</td>
-          <td>
-            @if ($item->kategori == 1)
-              Dipinjam oleh siswa
-            @elseif ($item->kategori == 0)
-              Milik Sekolah
-            @endif
-          </td>
-          <td>
-            @if ($item->tipe == 0)
-              Barang Tetap
-            @elseif ($item->tipe == 1)
-              Barang Berpindah
-            @endif
-          </td>
-          <td>
-            @if ($item->status == 0)
-              Baru
-            @elseif ($item->status == 1)
-              Hilang
-            @elseif ($item->status == 2)
-              Rusak Ringan
-            @elseif ($item->status == 3)
-              Rusak
-            @elseif ($item->status == 4)
-              Diperbarui
-            @endif
-          </td>
-          <td class="d-flex gap-2">
-              <a href="{{ route('inventaris.show', $item->id) }}" class="text-black">
-                  <i class="bi bi-eye"></i>
-              </a>
-              <form action="{{ route('inventaris.destroy', $item->id) }}" method="POST">
-                  @csrf
-                  @method('DELETE')
-                  <button type="submit" style="border: none; background: none;" class="text-black">
-                      <i class="bi bi-trash"></i>
-                  </button>
-              </form>
-              @if ($item->status == 0 )
-                @if ($item->kategori != 1)
-                  <a href="{{ route('inventaris.edit', $item->id) }}" class="text-black">
-                      <i class="bi bi-pencil-square"></i>
-                  </a>
-                @endif
-              @elseif ($item->status == 4 && $item->kategori != 1) 
-                  <a href="{{ route('inventaris.edit', $item->id) }}" class="text-black">
-                      <i class="bi bi-pencil-square"></i>
-                  </a>
-              @endif
-          </td>
-      </tr>
-      @endforeach
-    </tbody>
-  </table>
-</div> --}}
 
 <div class="container-fluid d-flex justify-content-between align-items-center py-3 px-5 border-3 border-bottom rounded-3">
   <div class="input-group">
@@ -146,6 +34,9 @@
     </div>
     <div class="d-flex gap-2">
       <button type="submit" class="btn btn-grey text-white">Download</button>
+      <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#masterModal">
+        Kelola Data Master
+      </button>
       <a href="{{ route('qrcode.render', ['from' => 'inventaris']) }}">
         <button type="button" class="btn btn-darkblue text-white">Scan Kode QR</button>
       </a>
@@ -157,6 +48,33 @@
       </a>
     </div>
   </div>
+
+  <!-- Modal Kelola Data Master -->
+<div class="modal fade" id="masterModal" tabindex="-1" aria-labelledby="masterModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="masterModalLabel">Kelola Data Master</h5>
+        <button type="button" class="btn" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body d-flex flex-column gap-3">
+        
+        <a href="{{ route('kategori.index') }}" class="btn btn-outline-primary w-100">
+          <i class="bi bi-folder-plus me-2"></i> Tambah / Lihat Kategori Master
+        </a>
+        <a href="{{ route('tipe.index') }}" class="btn btn-outline-success w-100">
+          <i class="bi bi-diagram-3 me-2"></i> Tambah / Lihat Tipe Master
+        </a>
+        <a href="{{ route('status.index') }}" class="btn btn-outline-warning w-100">
+          <i class="bi bi-gear-fill me-2"></i> Tambah / Lihat Status Master
+        </a>
+        <a href="{{ route('items_masters.index') }}" class="btn btn-outline-dark w-100">
+          <i class="bi bi-box-seam me-2"></i> Tambah / Lihat Item Master
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
 
   {{-- PINDAHKAN TABLE KE DALAM FORM --}}
   <div class="container-fluid mt-3">
@@ -180,17 +98,20 @@
           <td>{{ $data->firstItem() + $index }}</td> {{-- Nomor urut global --}}
           <td><input type="checkbox" name="selected_items[]" value="{{ $item->id }}"></td>
           <td>{{ $item->nama_barang }}</td>
-          <td>{{ $item->kategori == 1 ? 'Dipinjam oleh siswa' : 'Milik Sekolah' }}</td>
+          {{-- <td>{{ $item->kategori == 1 ? 'Dipinjam oleh siswa' : 'Milik Sekolah' }}</td> --}}
+          <td>{{ $item->kategori->nama_kategori ?? ''}}</td>
           <td>{{ $item->nama_siswa ?: '-' }}</td>
-          <td>{{ $item->tipe == 0 ? 'Barang Tetap' : 'Barang Berpindah' }}</td>
+          {{-- <td>{{ $item->tipe == 0 ? 'Barang Tetap' : 'Barang Berpindah' }}</td> --}}
+          <td>{{ $item->tipe->nama_tipe ?? '' }}</td>
           <td>
-            @switch($item->status)
+            {{ $item->status->nama_status ?? '' }}
+            {{-- @switch($item->status)
               @case(0) Baru @break
               @case(1) Hilang @break
               @case(2) Rusak Ringan @break
               @case(3) Rusak @break
               @case(4) Diperbarui @break
-            @endswitch
+            @endswitch --}}
           </td>
           <td>{{ $item->keterangan ?: '-' }}</td>
           <td class="d-flex gap-2">
@@ -200,7 +121,9 @@
             <button type="button" onclick="deleteItem('{{ route('inventaris.destroy', $item->id) }}')" style="border:none; background:none;">
               <i class="bi bi-trash"></i>
             </button>
-            @if (($item->status == 0 || $item->status == 4) && $item->kategori != 1)
+            {{-- @if (($item->status == 0 || $item->status == 4) && $item->kategori != 1) --}}
+            @if (in_array(optional($item->status)->id, [1, 5]) && optional($item->kategori)->id == 1)
+
               <a href="{{ route('inventaris.edit', $item->id) }}" class="text-black">
                   <i class="bi bi-pencil-square"></i>
               </a>

@@ -25,95 +25,62 @@ class PaymentController extends Controller
      */
     public function index()
     {
-        //
-        // $data = barangRusak::with('barang')->get();
-        // $payments = Pembayaran::with('barangRusak')->get();
-
-        // $data = DB::table('pembayaran')
-        // ->leftjoin('barang_rusaks', 'pembayaran.barang_rusaks_id', '=', 'barang_rusaks.id')
-        // ->join('barangs', 'barangs.id', '=', 'barang_rusaks.barang_id')
-        //     ->select(
-        //         'barangs.id as barang_id',
-        //         'barang_rusaks.id as barang_rusaks_id',
-        //         'barangs.nama_barang as nama_barang',
-        //         'barangs.nama_siswa as nama_siswa',
-        //         'barangs.kategori as kategori',
-        //         'barangs.tipe as tipe',
-        //         'barangs.keterangan as keterangan',
-        //         'barangs.status as status',
-        //         'pembayaran.id as pembayaran_id',
-        //         'pembayaran.barang_rusaks_id as barang_rusak_id'
-        //     )->get();
-
-            // $data = DB::table('barang_rusaks')
-            //     ->leftJoin('pembayaran', 'barang_rusaks.id', '=', 'pembayaran.barang_rusaks_id')
-            //     ->join('barangs', 'barang_rusaks.barang_id', '=', 'barangs.id')
-            //     ->whereNull('pembayaran.id')
-            //     ->where('barangs.status', 4)
-            //     ->select(
-            //         'barangs.id as barang_id',
-            //         'barang_rusaks.id as barang_rusaks_id',
-            //         'barangs.nama_barang as nama_barang',
-            //         'barangs.nama_siswa as nama_siswa',
-            //         'barangs.kategori as kategori',
-            //         'barangs.tipe as tipe',
-            //         'barangs.keterangan as keterangan',
-            //         'barangs.status as status'
-            //     )
-            //     ->get();
-
-            // $data = DB::table('barangs')
-            // ->leftJoin('barang_rusaks', 'barangs.id', '=', 'barang_rusaks.barang_id')
-            // ->leftJoin('pembayaran', 'barang_rusaks.id', '=', 'pembayaran.barang_rusaks_id')
-            // ->whereNotIn('status', [0, 4])
-            // ->whereNull('pembayaran.id')
-            // ->select(
-            //     'barangs.id as barang_id',
-            //     'barang_rusaks.id as barang_rusaks_id',
-            //     'barangs.nama_barang',
-            //     'barangs.nama_siswa',
-            //     'barangs.kategori',
-            //     'barangs.tipe',
-            //     'barangs.keterangan',
-            //     'barangs.status'
-            // )
-            // ->get();
 
         Paginator::useBootstrap(); // Tambahkan ini
 
 
-            $data = DB::table('barangs')
-            ->join(DB::raw('
-                (
-                    SELECT barang_rusaks.*
-                    FROM barang_rusaks
-                    LEFT JOIN pembayaran ON pembayaran.barang_rusaks_id = barang_rusaks.id
-                    WHERE pembayaran.id IS NULL
-                ) as barang_rusaks
-            '), 'barang_rusaks.barang_id', '=', 'barangs.id')
-            ->whereNotIn('barangs.status', [0, 4])
+            // $data = DB::table('barangs')
+            //     ->join(DB::raw('(
+            //         SELECT barang_rusaks.*
+            //         FROM barang_rusaks
+            //         LEFT JOIN pembayaran ON pembayaran.barang_rusaks_id = barang_rusaks.id
+            //         WHERE pembayaran.id IS NULL
+            //     ) as barang_rusaks'), 'barang_rusaks.barang_id', '=', 'barangs.id')
+            //     ->leftJoin('kategori_masters', 'barangs.kategori_id', '=', 'kategori_masters.id')
+            //     ->leftJoin('tipe_masters', 'barangs.tipe_id', '=', 'tipe_masters.id')
+            //     ->leftJoin('status_masters', 'barangs.status_id', '=', 'status_masters.id')
+            //     ->whereNotIn('barangs.status_id', [0, 4])
+            //     ->select(
+            //         'barangs.id as barang_id',
+            //         'barang_rusaks.id as barang_rusaks_id',
+            //         'barangs.nama_barang',
+            //         'barangs.nama_siswa',
+            //         'kategori_masters.nama_kategori',
+            //         'tipe_masters.nama_tipe',
+            //         'status_masters.nama_status',
+            //         'barangs.keterangan'
+            //     )
+            //     ->paginate(20);
+
+             $data = DB::table('barangs')
+            ->join('barang_rusaks', 'barang_rusaks.barang_id', '=', 'barangs.id')
+            ->leftJoin('pembayaran', 'pembayaran.barang_rusaks_id', '=', 'barang_rusaks.id')
+            ->leftJoin('category_masters', 'barangs.kategori_id', '=', 'category_masters.id')
+            ->leftJoin('type_masters', 'barangs.tipe_id', '=', 'type_masters.id')
+            ->leftJoin('status_masters', 'barangs.status_id', '=', 'status_masters.id')
+            ->whereIn('barangs.status_id', [2, 3, 4]) // hanya status tertentu
+            ->whereNull('pembayaran.id') // hanya barang_rusaks yang belum ada pembayaran
             ->select(
                 'barangs.id as barang_id',
                 'barang_rusaks.id as barang_rusaks_id',
                 'barangs.nama_barang',
+                'barangs.status_id',
+                'barangs.kategori_id',
+                'barangs.tipe_id',
                 'barangs.nama_siswa',
-                'barangs.kategori', 
-                'barangs.tipe',
-                'barangs.keterangan',
-                'barangs.status'
+                'category_masters.nama_kategori',
+                'type_masters.nama_tipe',
+                'status_masters.nama_status',
+                'barangs.keterangan'
             )
-            ->groupBy(
-                'barangs.id',
-                'barang_rusaks.id',
-                'barangs.nama_barang',
-                'barangs.nama_siswa',
-                'barangs.kategori',
-                'barangs.tipe',
-                'barangs.keterangan',
-                'barangs.status'
-            )
-            // ->get();
             ->paginate(20);
+
+        $categories = \App\Models\CategoryMaster::all();
+        $types = \App\Models\TypeMaster::all();
+        $statuses = \App\Models\StatusMaster::all();
+        $items = \App\Models\ItemMasters::all();
+
+        $datas = Barang::with(['kategori', 'status', 'tipe', 'itemMaster'])->paginate(20);
 
         
         
@@ -121,7 +88,7 @@ class PaymentController extends Controller
 
         // return dd($data);
 
-        return view('admin.payment.index', compact('data'));    
+        return view('admin.payment.index', compact('data', 'datas'));    
     }
 
     /**
@@ -158,13 +125,13 @@ class PaymentController extends Controller
                 'barang_rusaks.surat as surat',
                 'barangs.nama_barang as nama_barang',
                 'barangs.nama_siswa as nama_siswa',
-                'barangs.kategori as kategori',
-                'barangs.tipe as tipe',
+                'barangs.kategori_id as kategori',
+                'barangs.tipe_id as tipe',
                 'barangs.harga_awal as harga_awal',
                 'barangs.kodeQR as kodeQR',
                 'barangs.bukti as bukti',
                 'barangs.keterangan as keterangan',
-                'barangs.status as status',
+                'barangs.status_id as status',
                 'pembayaran.id as pembayaran_id',
                 'pembayaran.barang_rusaks_id as barang_rusak_id'
             )
@@ -181,10 +148,19 @@ class PaymentController extends Controller
     public function edit(string $id)
     {
         //
-        $items = BarangRusak::with('barang')->get()->find($id);
-        $payment = Pembayaran::where('barang_rusaks_id', $items->id)->first();
+        $items = BarangRusak::with('barang')->findOrFail($id);
+        $barangRusak = BarangRusak::with('barang')->get()->find($id);
+        $payment = Pembayaran::where('barang_rusaks_id', $barangRusak->id)->first();
+        // $barang = Barang::findOrFail($id);
+        // Barang diambil dari relasi, bukan find ulang pakai id rusak
+        $barang = $barangRusak->barang;
+
+        $categories = \App\Models\CategoryMaster::all();
+        $types = \App\Models\TypeMaster::all();
+        $statuses = \App\Models\StatusMaster::all();
+        $itemsMaster = \App\Models\ItemMasters::all();
         // return dd($pembayaran);
-        return view('admin.payment.edit', compact('items', 'payment'));
+        return view('admin.payment.edit', compact('barangRusak', 'items', 'payment', 'categories', 'types', 'statuses', 'itemsMaster', 'barang'));
     }
 
     /**
@@ -192,7 +168,6 @@ class PaymentController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        
         $validatedData = $request->validate([
             'keterangan' => 'required|string|max:255',
             'kodeQR' => 'nullable|string|max:255',
@@ -202,108 +177,104 @@ class PaymentController extends Controller
             'bukti_transfer' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
-        // return dd($request->all());  
-
+        // Ambil data barang
         $barang = Barang::findOrFail($id);
-        $barangRusak = BarangRusak::where('barang_id', $id)->first();
         $pinjaman = Pinjaman::where('barang_id', $id)->first();
-        // \Log::info($request->all());
 
-        // return dd($barang->id);
-
-        // update for insert surat into barangRusak
+        // ======================================================
+        // 1️⃣ Simpan data BARANG RUSAK baru (selalu insert baru)
+        // ======================================================
         $pathSurat = null;
         if ($request->hasFile('surat')) {
             $file = $request->file('surat');
-            $imagePath = Storage::disk('public')->put('surat', $file);
-
             $pathSurat = $file->storeAs(
-                'images', // Direktori target di disk 'public'
-                $file->getClientOriginalName(), // Nama file asli
-                'public' // Disk 'public'
-            ); 
+                'images',
+                $file->getClientOriginalName(),
+                'public'
+            );
         }
+
+        // $barangRusak = new BarangRusak();
+        $barangRusak = BarangRusak::where('barang_id', $id)->first();
+        $barangRusak->barang_id = $barang->id;
+        $barangRusak->pinjaman_id = $pinjaman ? $pinjaman->id : null;
         $barangRusak->surat = $pathSurat;
         $barangRusak->save();
 
-        // update for barangs
+        // ======================================================
+        // 2️⃣ Update tabel BARANGS (status jadi rusak + QR baru)
+        // ======================================================
         $pathBukti = null;
         if ($request->hasFile('bukti')) {
             $file = $request->file('bukti');
-            $imagePath = Storage::disk('public')->put('bukti_pembelian', $file);
-
             $pathBukti = $file->storeAs(
-                'images', // Direktori target di disk 'public'
-                $file->getClientOriginalName(), // Nama file asli
-                'public' // Disk 'public'
-            ); 
+                'images',
+                $file->getClientOriginalName(),
+                'public'
+            );
         }
 
         $barang->keterangan = $request->keterangan;
-        $barang->tipe = $request->tipe;
-        $barang->status = 4;
-        $barang->keterangan = $request->keterangan;
+        $barang->tipe_id = $request->tipe_id;
+        $barang->status_id = 5; // 5 = rusak
+        $barang->bukti = $pathBukti;
 
-        // Generate ulang isi QR-nya
-        $kategoriLabel = $barang->kategori == 1 ? 'Dipinjam oleh siswa' : 'Milik Sekolah';
-        $tipeLabel = $barang->tipe == 1 ? 'Barang berpindah' : 'Barang tetap';
-        $statusLabel = 'Diperbarui';
-
+        // Generate ulang isi QR
         $kodeQR = json_encode([
             'id' => $barang->id,
             'nama_barang' => $barang->nama_barang,
-            'tipe' => $tipeLabel,
-            'kategori' => $kategoriLabel,
-            'status' => $statusLabel,
-            'keterangan' => $request->keterangan,
-            'harga_awal' => $request->harga_awal,
+            'tipe' => $barang->tipe_id,
+            'kategori' => $barang->kategori_id,
+            'status' => $barang->status_id,
+            'keterangan' => $barang->keterangan,
+            'harga_awal' => $barang->harga_awal,
         ]);
-
-        // $barang->kodeQR = $kodeQR;
-
-        // $barang->bukti = $pathBukti;
+        $barang->kodeQR = $kodeQR;
         $barang->save();
 
-        // update for pembayaran
-        $pembayaran = new Pembayaran();
-        $dataChecked = Pembayaran::where('barang_rusaks_id', $barangRusak->id)->first();
-
+        // ======================================================
+        // 3️⃣ Simpan data PEMBAYARAN (selalu buat baru juga)
+        // ======================================================
         $pathTransfer = null;
         if ($request->hasFile('bukti_transfer')) {
             $file = $request->file('bukti_transfer');
-            $imagePath = Storage::disk('public')->put('bukti_transfer', $file);
-
             $pathTransfer = $file->storeAs(
-                'images', // Direktori target di disk 'public'
-                $file->getClientOriginalName(), // Nama file asli
-                'public' // Disk 'public'
-            ); 
+                'images',
+                $file->getClientOriginalName(),
+                'public'
+            );
         }
-        if ($dataChecked) {
-            $dataChecked->barang_rusaks_id = $barangRusak->id;
-            $dataChecked->bukti_transfer = $pathTransfer;
-            $dataChecked->biaya_perbaikan = $request->biaya_perbaikan;
-            $dataChecked->save();
-        } else {
-            $pembayaran->barang_rusaks_id = $barangRusak->id;
-            $pembayaran->bukti_transfer = $pathTransfer;
-            $pembayaran->biaya_perbaikan = $request->biaya_perbaikan;
-            $pembayaran->save();
-        }
-        
 
-        
-        // insert logs into item_status_log for history  
+        $dataChecked = Pembayaran::where('barang_rusaks_id', $barangRusak->id)->first();
+
+        if (!$dataChecked) {
+            $dataChecked = new Pembayaran();
+        }
+        // $pembayaran = new Pembayaran();
+        // $pembayaran->barang_rusaks_id = $barangRusak->id;
+        // $pembayaran->bukti_transfer = $pathTransfer;
+        // $pembayaran->biaya_perbaikan = $request->biaya_perbaikan;
+        // $pembayaran->save();
+        $dataChecked->barang_rusaks_id = $barangRusak->id;
+        $dataChecked->bukti_transfer = $pathTransfer ?? null;
+        $dataChecked->biaya_perbaikan = $request->biaya_perbaikan;
+        $dataChecked->save();
+
+
+        // ======================================================
+        // 4️⃣ Tambahkan ke ITEM STATUS LOG (untuk histori barang)
+        // ======================================================
         $itemLogs = new itemStatusLog();
-        $itemLogs->barang_id = $id;
-        $itemLogs->status = $barang->status;
+        $itemLogs->barang_id = $barang->id;
+        $itemLogs->status = $barang->status_id;
         $itemLogs->keterangan = $barang->keterangan;
         $itemLogs->biaya_perbaikan = $request->biaya_perbaikan;
         $itemLogs->save();
 
-        return redirect()->route('pembayaran.index')->with('success', 'Update barang telah dibarui');
-
-        
+        // ======================================================
+        // 5️⃣ Redirect sukses
+        // ======================================================
+        return redirect()->route('pembayaran.index')->with('success', 'Barang rusak baru berhasil dicatat dan pembayaran disimpan.');
     }
 
     /**

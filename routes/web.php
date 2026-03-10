@@ -10,6 +10,10 @@ use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\QRCodeController;
 use App\Http\Controllers\ExportPDFController;
+use App\Http\Controllers\KategoriController;
+use App\Http\Controllers\TipeController;
+use App\Http\Controllers\StatusController;
+use App\Http\Controllers\BarangController; 
 
 
 
@@ -20,10 +24,26 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Inventarory Routes
     Route::resource('inventaris', InventoryController::class);
+    // Route::get('inventaris/', [InventoryController::class, 'details'])->name('inventaris.details');
     Route::get('inventaris/details/{id}', [InventoryController::class, 'details'])->name('inventaris.details');
+
+    // Data Master
+    Route::resource('kategori', KategoriController::class);
+    Route::get('MastersKategori', [KategoriController::class, 'index'])->name('admin.category_masters.index');
+    Route::resource('tipe', TipeController::class);
+    Route::get('MastersTipe', [TipeController::class, 'index'])->name('type_masters.index');
+    Route::resource('status', StatusController::class);
+    Route::get('MastersStatus', [StatusController::class, 'index'])->name('status_masters.index');
+    // Route::prefix('admin')->name('admin.')->group(function () {
+        // resource untuk item master (nama path dan route names bisa kamu sesuaikan)
+    Route::resource('barang', BarangController::class);
+    Route::get('MastersItem', [BarangController::class, 'index'])->name('items_masters.index');
+    // });
+
     // IMPORT CSV
     Route::get('importCSV', [InventoryController::class, 'importCSV'])->name('import.csv');
     Route::post('importCSV', [InventoryController::class, 'handleImportCSV'])->name('import.csv.handle');
+    Route::get('importCSV/template', [InventoryController::class, 'downloadTemplate'])->name('import.csv.template');
     
     // Loan Routes
     Route::resource('peminjaman', LoanController::class);
@@ -36,6 +56,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // PEMBAYARAN
     Route::resource('pembayaran', PaymentController::class);
+
+    
+
 
 
     // Ini untuk export PDF dan generate qr code with server-side generator

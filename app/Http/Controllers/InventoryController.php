@@ -33,7 +33,9 @@ class InventoryController extends Controller
         //
         // $data = Barang::all();
         Paginator::useBootstrap(); // Tambahkan ini
-        $data = Barang::paginate(20);
+        // $data = Barang::paginate(20);
+        $data = Barang::with(['kategori', 'status', 'tipe', 'itemMaster'])->paginate(20);
+
         
         return view('admin.inventory.index', compact('data')); // kirim ke view
     }
@@ -43,8 +45,12 @@ class InventoryController extends Controller
      */
     public function create()
     {
-        //
-        return view('admin.inventory.create');
+        $categories = \App\Models\CategoryMaster::all();
+        $types = \App\Models\TypeMaster::all();
+        $statuses = \App\Models\StatusMaster::all();
+        $items = \App\Models\ItemMasters::all();
+
+        return view('admin.inventory.create', compact('categories', 'types', 'statuses', 'items'));
     }
 
     /**
@@ -53,15 +59,19 @@ class InventoryController extends Controller
     public function store(Request $request)
     {
         //
+        // Log::info('Data berhasil disimpan', ['data' => $request->all()]);
+
         $validatedData = $request->validate([
-            'nama_barang' => 'required|string|max:255',
-            'kategori' => 'required|integer|max:255',
-            'tipe' => 'required|integer|max:255',
-            'status' => 'required|numeric',
+            // 'nama_barang' => 'required|string|max:255',
+            'kategori_id' => 'required|integer',
+            'tipe_id' => 'required|integer',
+            'status_id' => 'required|integer',
+            'items_id' => 'required|integer',
             'harga_awal' => 'required|numeric',
-            'kodeQR' => 'nullable|string|max:255',
-            'bukti' => 'file|mimes:jpg,jpeg,png,pdf|max:2048',
-            // 'image' => 'nullable|file|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'bukti' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'surat' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048', // 🟢 Tambahan
+            'keterangan' => 'nullable|string|max:1000', // 🟢 Tambahan
+            'nama_siswa' => 'nullable|string|max:255', // 🟢 Tambahan
         ]);
 
         $barang = new Barang();
@@ -78,25 +88,77 @@ class InventoryController extends Controller
                 'public' // Disk 'public'
             ); 
         }
+        // $barang = Barang::findOrFail($id);
 
-        $barang->nama_barang = $request->nama_barang;
-        $barang->kategori = $request->kategori;
+        // $barang->nama_barang = $request->nama_barang;
+        // $barang->kategori = $request->kategori;
+        // $barang->nama_siswa = $request->nama_siswa;
+        // $barang->tipe = $request->tipe;
+        // $barang->status = $request->status;
+        // $barang->harga_awal = $request->harga_awal;
+        // $barang->kodeQR = $request->kodeQR;
+        // $barang->bukti = $path;
+        // $barang->save();
+        // return dd($request->all());
+        $itemMaster = \App\Models\ItemMasters::findOrFail($request->items_id);
+
+        $barang->nama_barang = $itemMaster->nama_barang;
+        $barang->kategori_id = $request->kategori_id;
         $barang->nama_siswa = $request->nama_siswa;
-        $barang->tipe = $request->tipe;
-        $barang->status = $request->status;
+        $barang->tipe_id = $request->tipe_id;
+        $barang->status_id = $request->status_id;
+        $barang->items_id = $request->items_id;
         $barang->harga_awal = $request->harga_awal;
-        $barang->kodeQR = $request->kodeQR;
         $barang->bukti = $path;
+        $barang->keterangan = $request->keterangan; // 🟢 Tambahan penting
         $barang->save();
 
-        if ($request->kategori ==  1) {
+        $qrData = [
+            'id' => $barang->id,
+        ];
+
+        $barang->kodeQR = json_encode($qrData, JSON_UNESCAPED_UNICODE);
+        $barang->save();
+
+         // Cek kategori secara dinamis berdasarkan nama di CategoryMaster
+        $kategori = \App\Models\CategoryMaster::find($request->kategori_id);
+
+        if ($kategori && stripos($kategori->nama_kategori, 'siswa') !== false) {
+            // Pastikan nama siswa tidak kosong
+            if (!$request->filled('nama_siswa')) {
+                return redirect()->back()->withErrors(['nama_siswa' => 'Nama siswa wajib diisi untuk kategori ini.'])->withInput();
+            }
+
+            // Simpan data ke tabel Pinjaman
             Pinjaman::create([
-                // 'user_id' => $request->user_id,
                 'barang_id' => $barang->id,
+                // 'tanggal_pinjam' => now(),
             ]);
         }
 
+        // if ($request->kategori_id == 2) {
+        //     Pinjaman::create([
+        //         'barang_id' => $barang->id,
+        //     ]);
+        // }
 
+        // jika status barang rusak atau hilang (2, 3, 4)
+        if (in_array((int) $request->status_id, [2, 3, 4])) {
+            $suratPath = null;
+
+            if ($request->hasFile('surat')) {
+                $file = $request->file('surat');
+                $suratPath = $file->storeAs('surat', $file->getClientOriginalName(), 'public');
+            }
+
+            BarangRusak::create([
+                'barang_id' => $barang->id,
+                'pinjaman_id' => null,
+                'surat' => $suratPath,
+            ]);
+
+            
+        }
 
         return redirect()->route('inventaris.index')->with('success', 'Barang berhasil ditambahkan');
     }
@@ -182,9 +244,14 @@ class InventoryController extends Controller
         $barang = Barang::findOrFail($id);
         $barangRusaks = BarangRusak::with('barang')->get();
 
+        $categories = \App\Models\CategoryMaster::all();
+        $types = \App\Models\TypeMaster::all();
+        $statuses = \App\Models\StatusMaster::all();
+        $items = \App\Models\ItemMasters::all();
+
         $barangRusakIds = BarangRusak::pluck('barang_id');
         $data = Barang::whereIn('id', $barangRusakIds)->get();
-        return view('admin.inventory.edit', compact('barang', 'barangRusaks'));
+        return view('admin.inventory.edit', compact('barang', 'barangRusaks', 'categories', 'types', 'statuses', 'items'));
     }
 
     /**
@@ -192,30 +259,53 @@ class InventoryController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        Log::info('Update barang dipanggil', $request->all());
         $barang = Barang::findOrFail($id);
 
         $validatedData = $request->validate([
-            'nama_barang' => 'required|string|max:255',
-            'kategori' => 'required|integer|max:255',
-            'tipe' => 'required|integer|max:255',
-            'status' => 'required|integer|max:255',
+            // 'nama_barang' => 'required|string|max:255',
+            'kategori_id' => 'required|integer|max:255',
+            'tipe_id' => 'required|integer|max:255',
+            'items_id' => 'required|integer',
+            'status_id' => 'required|integer|max:255',
             'harga_awal' => 'required|numeric',
-            'kodeQR' => 'required|string|max:255',
+            'kodeQR' => 'nullable|string|max:255',
             'bukti' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'surat' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'nama_siswa' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string|max:1000',
         ]);
 
+        $itemMaster = \App\Models\ItemMasters::findOrFail($request->items_id);
+
         // Update atribut dasar
-        $barang->nama_barang = $request->nama_barang;
+        $barang->nama_barang = $itemMaster->nama_barang;
         $barang->nama_siswa = $request->nama_siswa;
-        $barang->kategori = $request->kategori;
-        $barang->tipe = $request->tipe;
-        $barang->status = $request->status;
+        $barang->kategori_id = $request->kategori_id;
+        $barang->tipe_id = $request->tipe_id;
+        $barang->status_id = $request->status_id;
         $barang->harga_awal = $request->harga_awal;
-        $barang->kodeQR = $request->kodeQR;
-        if (!in_array((int) $request->status, [0, 4])) {
+        $barang->harga_awal = $request->harga_awal;
+        $qrData = [
+            'id' => $barang->id,
+            'nama_barang' => $barang->nama_barang,
+            'nama_siswa' => $barang->nama_siswa ?? null,
+            'kategori' => $barang->kategori->nama_kategori ?? null,
+            'status' => $barang->status->nama_status ?? null,
+            'tipe' => $barang->tipe->nama_tipe ?? null,
+            'harga_awal' => $barang->harga_awal,
+        ];
+
+        // id: barangId,
+        // nama_barang: namaBarang.value,
+        // kategori: kategoriText,
+        // nama_siswa: namaSiswa,
+        // tipe: tipeText,
+        // status: statusText,
+        // harga_awal: hargaElement.value
+
+        $barang->kodeQR = json_encode($qrData, JSON_UNESCAPED_UNICODE);
+        if (!in_array((int) $request->status_id, [2, 4])) {
             $barang->keterangan = $request->keterangan;
         }
         // $barang->keterangan = $request->keterangan;
@@ -226,7 +316,7 @@ class InventoryController extends Controller
         // \Log::info('UPDATE DIPANGGIL');
         // return dd('update masuk');
 
-        if ((int) $request->kategori == 1) {
+        if ((int) $request->kategori_id == 1) {
             Pinjaman::create([
                 'barang_id' => $barang->id,
             ]);
@@ -255,7 +345,7 @@ class InventoryController extends Controller
         //         ]);
         //     }
         // }
-        if ($request->status != 0) {
+        if ($request->status != 1) {
             $suratPath = null;
 
             if ($request->hasFile('surat')) {
@@ -324,7 +414,25 @@ class InventoryController extends Controller
     // di InventoryController paling bawah
     public function importCSV()
     {
-        return view('admin.inventory.import'); // tampilan upload form
+        // return view('admin.inventory.import'); // tampilan upload form
+        $categories = \App\Models\CategoryMaster::all();
+        $types = \App\Models\TypeMaster::all();
+        $statuses = \App\Models\StatusMaster::all();
+        $items = \App\Models\ItemMasters::all();
+
+        return view('admin.inventory.import', compact('categories', 'types', 'statuses', 'items'));
+    }
+
+    public function downloadTemplate()
+    {
+        $filename = "template_import_barang.csv";
+        $content = "nama_barang,kategori_id,nama_siswa,tipe_id,status_id,harga_awal\n".
+                "1,1,,1,1,500000\n".
+                "2,2,Ahmad,1,2,300000\n";
+
+        return response($content)
+            ->header('Content-Type', 'text/csv')
+            ->header('Content-Disposition', "attachment; filename={$filename}");
     }
 
     public function handleImportCSV(Request $request)
@@ -335,41 +443,45 @@ class InventoryController extends Controller
 
         $file = $request->file('csv_file');
         $handle = fopen($file->getPathname(), "r");
-        $header = fgetcsv($handle, 1000, ","); // Ambil header csv
+        $header = fgetcsv($handle, 1000, ",");
 
         $count = 0;
         while (($row = fgetcsv($handle, 1000, ",")) !== FALSE) {
             $data = array_combine($header, $row);
 
-            $barang = Barang::create([
+            // ✅ Validasi master existence
+            if (!\App\Models\CategoryMaster::find($data['kategori_id']) ||
+                !\App\Models\TypeMaster::find($data['tipe_id']) ||
+                !\App\Models\StatusMaster::find($data['status_id'])) {
+                fclose($handle);
+                return redirect()->back()->with('error', "❌ Gagal import: Data master tidak ditemukan pada baris ke-".($count+1));
+            }
+
+            // Buat barang
+            $barang = \App\Models\Barang::create([
                 'nama_barang' => $data['nama_barang'],
-                'kategori' => $data['kategori'],
+                'kategori_id' => $data['kategori_id'],
                 'nama_siswa' => $data['nama_siswa'] ?? null,
-                'tipe' => $data['tipe'],
-                'status' => $data['status'],
+                'tipe_id' => $data['tipe_id'],
+                'status_id' => $data['status_id'],
                 'harga_awal' => $data['harga_awal'] ?? 0,
-                'kodeQR' => null, // sementara null, nanti update
+                'kodeQR' => null,
                 'bukti' => null,
             ]);
 
-            // generate kodeQR otomatis setelah tahu id
             $barang->update([
                 'kodeQR' => json_encode(['id' => (string) $barang->id])
             ]);
 
-            // kalau kategori = 1 otomatis masuk ke tabel pinjamans
-            if ((int)$data['kategori'] === 1) {
-                Pinjaman::create([
-                    'barang_id' => $barang->id,
-                ]);
+            if ((int)$data['kategori_id'] === 1) {
+                \App\Models\Pinjaman::create(['barang_id' => $barang->id]);
             }
 
-            // kalau status != 0 dan != 4 otomatis masuk ke barang_rusaks
-            if ((int)$data['status'] !== 0 && (int)$data['status'] !== 4) {
-                BarangRusak::create([
+            if (in_array((int)$data['status_id'], [2, 3, 4])) {
+                \App\Models\BarangRusak::create([
                     'barang_id' => $barang->id,
                     'pinjaman_id' => null,
-                    'surat' => null, // karena saat import CSV belum ada file
+                    'surat' => null,
                 ]);
             }
 

@@ -3,9 +3,6 @@
 @section('content')
 <div class="bg-mainbg">
   <div class="container-fluid d-flex justify-content-between align-items-center py-3 px-5 border-3 border-bottom rounded-3 bg-white">
-    {{-- <div>
-      <input type="text" placeholder="Cari nama barang, produk id, kategori" size="60">
-    </div> --}}
     <div class="input-group">
       <span class="input-group-text bg-white border-0">
         <i class="bi bi-search text-muted"></i>
@@ -22,11 +19,9 @@
   @include('layouts.flash-message')
 
   <div class="d-flex align-items-center my-3 gap-2 container-fluid">
-    {{-- <button class=""> --}}
-      <a href="{{ route('inventaris.index') }}">
-        <i class="bi bi-arrow-left-square fs-3"></i>
-      </a>
-    {{-- </button> --}}
+    <a href="{{ route('inventaris.index') }}">
+      <i class="bi bi-arrow-left-square fs-3"></i>
+    </a>
     <h4 class="mb-0">Tambah barang</h4>
   </div>
 
@@ -35,16 +30,22 @@
     <form action="{{ route("inventaris.store") }}" class="p-4" method="POST" enctype="multipart/form-data">
       @csrf
       <div class="mb-3">
-        <label for="nama_barang" class="form-label">Nama Barang<span class="text-danger">*</span></label>
-        <input type="text" class="form-control" id="nama_barang" name="nama_barang" required>
+        <label for="items_id" class="form-label">Nama Barang<span class="text-danger">*</span></label>
+        <select class="form-select" id="items_id" name="items_id" required>
+          <option value="" disabled selected>Pilih Nama Barang</option>
+          @foreach ($items as $item)
+            <option value="{{ $item->id }}">{{ $item->nama_barang }}</option>
+          @endforeach
+        </select>
       </div>
 
       <div class="mb-3">
-        <label for="kategori" class="form-label">Kategori <span class="text-danger">*</span></label>
-        <select class="form-select" id="kategori" name="kategori" required>
+        <label for="kategori_id" class="form-label">Kategori <span class="text-danger">*</span></label>
+        <select class="form-select" id="kategori_id" name="kategori_id" required>
           <option value="" disabled selected>Pilih kategori</option>
-          <option value="0">Milik Sekolah</option>
-          <option value="1">Dipinjam oleh siswa</option>
+          @foreach ($categories as $category)
+            <option value="{{ $category->id }}">{{ $category->nama_kategori }}</option>
+          @endforeach
         </select>
       </div>
 
@@ -54,35 +55,39 @@
       </div>
 
       <div class="mb-3">
-        <label for="tipe" class="form-label">Tipe <span class="text-danger">*</span></label>
-        <select class="form-select" id="tipe" name="tipe" required>
+        <label for="tipe_id" class="form-label">Tipe <span class="text-danger">*</span></label>
+        <select class="form-select" id="tipe_id" name="tipe_id" required>
           <option value="" disabled selected>Pilih tipe</option>
-          <option value="1">Barang berpindah</option>
-          <option value="0">Barang tetap</option>
+          @foreach ($types as $type)
+            <option value="{{ $type->id }}">{{ $type->nama_tipe }}</option>
+          @endforeach
         </select>
       </div>
 
       <div class="mb-3">
-        <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
-        <select class="form-select" id="status" name="status" required>
+        <label for="status_id" class="form-label">Status <span class="text-danger">*</span></label>
+        <select class="form-select" id="status_id" name="status_id" required>
           <option value="" disabled selected>Pilih status barang</option>
-          <option value="0">baru</option>
-          {{-- <option value="Hilang">hilang</option>
-          <option value="Rusak ringan">rusak ringan</option>
-          <option value="Rusak">rusak</option> --}}
+          @foreach ($statuses as $status)
+            <option value="{{ $status->id }}">{{ $status->nama_status }}</option>
+          @endforeach
         </select>
+      </div>
+
+      {{-- Field tambahan: Surat & Keterangan (dinamis berdasarkan status) --}}
+      <div class="mb-3 d-none" id="field-keterangan">
+        <label for="keterangan" class="form-label">Keterangan <span class="text-danger">*</span></label>
+        <textarea class="form-control" id="keterangan" name="keterangan" rows="3" placeholder="Tuliskan keterangan tambahan..."></textarea>
+      </div>
+      <div class="mb-3 d-none" id="field-surat">
+        <label for="surat" class="form-label">Surat (Opsional)</label>
+        <input type="file" class="form-control" id="surat" name="surat">
       </div>
 
       <div class="mb-3">
         <label for="harga" class="form-label">Harga Awal <span class="text-danger">*</span></label>
         <input type="number" class="form-control" name="harga_awal" id="harga" required>
       </div>
-
-      {{-- <div class="mb-3">
-        <label class="form-label">Generate Kode QR</label><br>
-        <button type="button" class="btn btn-sm btn-outline-dark">Klik untuk Generate Kode QR</button>
-        <input type="text" class="visually-hidden" name="kodeQR" id="kodeQR" value="12(2Gss98vT}YG!saSD">
-      </div> --}}
 
       <div class="mb-3">
         <label for="bukti" class="form-label">Bukti :</label>
@@ -98,18 +103,31 @@
     </form>
   </div>
 </div>
-
 @endsection
 
 @push('scripts')
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    const kategoriSelect = document.getElementById('kategori');
+    const form = document.querySelector('form');
+    const kategoriSelect = document.getElementById('kategori_id');
     const namaSiswaField = document.getElementById('field-nama-siswa');
     const namaSiswaInput = document.getElementById('nama_siswa');
 
+    const statusSelect = document.getElementById('status_id');
+    const suratField = document.getElementById('field-surat');
+    const suratInput = document.getElementById('surat');
+    const ketField = document.getElementById('field-keterangan');
+    const ketInput = document.getElementById('keterangan');
+
+     // === QR CODE Container ===
+    // const qrContainer = document.createElement('div');
+    // qrContainer.id = "qrCodeContainer";
+    // qrContainer.classList.add("mt-3");
+    // form.parentNode.appendChild(qrContainer);
+
+    // toggle Nama Siswa
     function toggleNamaSiswa() {
-      if (kategoriSelect.value == 1) {
+      if (kategoriSelect.value == 2) {
         namaSiswaField.classList.remove('d-none');
         namaSiswaInput.required = true;
       } else {
@@ -119,8 +137,71 @@
       }
     }
 
+    // toggle Surat & Keterangan
+    function toggleSuratDanKeterangan() {
+      const selectedStatus = parseInt(statusSelect.value);
+      if ([2, 3, 4].includes(selectedStatus)) { // Hilang, Rusak Ringan, Rusak Berat
+        suratField.classList.remove('d-none');
+        ketField.classList.remove('d-none');
+        // suratInput.required = true;
+        ketInput.required = true;
+      } else {
+        suratField.classList.add('d-none');
+        ketField.classList.add('d-none');
+        suratInput.required = false;
+        ketInput.required = false;
+        suratInput.value = '';
+        ketInput.value = '';
+      }
+    }
+
     kategoriSelect.addEventListener('change', toggleNamaSiswa);
-    toggleNamaSiswa(); // trigger saat load pertama kali
+    statusSelect.addEventListener('change', toggleSuratDanKeterangan);
+
+    // Trigger on load
+    toggleNamaSiswa();
+    toggleSuratDanKeterangan();
+
+     // === Submit handler dengan QR Auto Generate ===
+    // form.addEventListener('submit', async function (e) {
+    //   e.preventDefault();
+    //   const formData = new FormData(form);
+
+    //   try {
+    //     const response = await fetch(form.action, {
+    //       method: 'POST',
+    //       body: formData
+    //     });
+    //     const result = await response.json();
+
+    //     if (result.success) {
+    //       // Bersihkan kontainer QR sebelum generate baru
+    //       qrContainer.innerHTML = "";
+
+    //       const barang = result.data; // pastikan controller return {success:true,data:barang}
+    //       const qrData = `
+    //         Nama Barang: ${barang.nama_barang}
+    //         Kategori: ${barang.kategori.nama_kategori}
+    //         Status: ${barang.status.nama_status}
+    //         Harga: ${barang.harga_awal}
+    //                   `;
+
+    //         new QRCode(qrContainer, {
+    //           text: qrData,
+    //           width: 180,
+    //           height: 180
+    //         });
+
+    //         alert("Barang berhasil ditambahkan dan QR Code sudah digenerate otomatis!");
+    //         form.reset();
+    //       } else {
+    //         alert("Terjadi kesalahan saat menyimpan data.");
+    //       }
+    //     } catch (err) {
+    //       console.error(err);
+    //       alert("Gagal menambahkan barang.");
+    //     }
+    //   });
   });
 </script>
 @endpush

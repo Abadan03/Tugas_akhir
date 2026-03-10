@@ -67,60 +67,38 @@
        {{-- {{ $item->barang->tipe }} --}}
       <tr>
           <td>{{ $data->firstItem() + $index }}</td> {{-- Nomor urut global --}}
-          <td>{{ $item->barang->nama_barang }}</td>
+          <td>{{ $item->nama_barang }}</td>
+          <td>{{ $item->kategori->nama_kategori ?? ''}}</td>
+          <td>{{ $item->nama_siswa ?: '-' }}</td>
+          <td>{{ $item->tipe->nama_tipe ?? '' }}</td>
           <td>
-            @if ($item->barang && $item->barang->kategori == 1)
-              Dipinjam oleh siswa
-            @elseif ($item->barang && $item->barang->kategori == 0)
-              Milik Sekolah
-            @endif
-          </td>
-          <td>
-            {{ $item->barang->nama_siswa }}
-          </td>
-          <td>
-            @if ($item->barang->tipe == 0)
-              Barang Tetap
-            @elseif ($item->barang->tipe == 1)
-              Barang Berpindah
-            @endif
-          </td>
-          <td>
-            @if ($item->barang->status == 0)
-              Baru
-            @elseif ($item->barang->status == 1)
-              Hilang
-            @elseif ($item->barang->status == 2)
-              Rusak Ringan
-            @elseif ($item->barang->status == 3)
-              Rusak
-            @elseif ($item->barang->status == 4)
-              Diperbarui
-            @endif
+            {{ $item->status->nama_status ?? '' }}
           </td>
 
          
           <td class="d-flex gap-2">
 
             {{-- {{ $item->barang_id }} --}}
-              <a href="{{ route('peminjaman.show', $item->barang_id) }}" class="text-black">
+              <a href="{{ route('peminjaman.show', $item->id) }}" class="text-black">
                   <i class="bi bi-eye"></i>
               </a>
-              <form action="{{ route('peminjaman.destroy', $item->barang->id) }}" method="POST">
+              {{-- <form action="{{ route('peminjaman.destroy', $item->id) }}" method="POST">
                   @csrf
                   @method('DELETE')
                   <button type="submit" style="border: none; background: none;" class="text-black">
                       <i class="bi bi-trash"></i>
                   </button>
-              </form>
+              </form> --}}
               {{-- @if ($item->barang->status == 0 && $item->barang->kategori != 0)
                 <a href="{{ route('peminjaman.edit', $item->barang->id) }}" class="text-black">
                     <i class="bi bi-pencil-square"></i>
                 </a>
               @endif --}}
-              @if ($item->barang->status == 0 || $item->barang->status === 4)
-                @if ($item->barang->kategori != 0)
-                  <a href="{{ route('peminjaman.edit', $item->barang->id) }}" class="text-black">
+              {{-- @if ($item->barang->status == 0 || $item->barangstatus === 4) --}}
+              @if (in_array(optional($item->status)->id, [1, 5]))
+                {{-- @if ($item->barang->kategori != 0) --}}
+                @if (in_array(optional($item->kategori)->id, [2]))
+                  <a href="{{ route('peminjaman.edit', $item->id) }}" class="text-black">
                       <i class="bi bi-pencil-square"></i>
                   </a>
                 @endif
@@ -129,6 +107,7 @@
                       <i class="bi bi-pencil-square"></i>
                   </a> --}}
               @endif
+              
           </td>
 
           
@@ -150,6 +129,7 @@
 </div>
 
 <script>
+  console.log(first)
 $(document).ready(function() {
     $("#search").on("keyup", function () {
       var value = $(this).val().toLowerCase();

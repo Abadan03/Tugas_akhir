@@ -8,6 +8,7 @@ use App\Models\Barang;
 use App\Models\Pinjaman;
 use App\Models\BarangRusak;
 
+
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 
@@ -27,12 +28,22 @@ class QRCodeController extends Controller
             $backRoute = route('inventaris.index');
         }
 
-        return view('admin.qrcode.scan', compact('backRoute'));
+        // $barang = Barang::findOrFail($id);
+        // $barang = $id ? Barang::find($id) : null;
+
+        $categories = \App\Models\CategoryMaster::all();
+        $types = \App\Models\TypeMaster::all();
+        $statuses = \App\Models\StatusMaster::all();
+        $items = \App\Models\ItemMasters::all();
+
+        return view('admin.qrcode.scan', compact('backRoute', 'categories', 'types', 'statuses', 'items'));
+        
     }
 
     public function fetch($id)
     {
-        $barang = Barang::findOrFail($id);
+        // $barang = Barang::findOrFail($id);
+        $barang = Barang::with(['kategori', 'tipe', 'status'])->findOrFail($id);
         // return dd($barang);
 
 
@@ -40,28 +51,42 @@ class QRCodeController extends Controller
             return response()->json(['error' => 'Barang tidak ditemukan'], 404);
         }
 
+        // return response()->json([
+        //     'id' => $barang->id,
+        //     'nama_barang' => $barang->nama_barang,
+        //     'kategori' => $barang->kategori, 
+        //     'kategori_label' => $barang->kategori == 1 ? 'Dipinjam oleh siswa' : 'Milik Sekolah',
+
+        //     'tipe' => $barang->tipe,
+        //     'tipe_label' => $barang->tipe == 1 ? 'Barang berpindah' : 'Barang tetap',
+
+        //     'status' => $barang->status,
+        //     'status_label' => match ($barang->status) {
+        //         0 => 'Baru',
+        //         1 => 'Hilang',
+        //         2 => 'Rusak Ringan',
+        //         3 => 'Rusak',
+        //         4 => 'Diperbarui',
+        //         default => '-'
+        //     },
+
+        //     'harga_awal' => $barang->harga_awal,
+        //     'nama_siswa' => $barang->nama_siswa,
+        //     'keterangan' => $barang->keterangan ?? ''
+        // ]);
+
         return response()->json([
             'id' => $barang->id,
             'nama_barang' => $barang->nama_barang,
-            'kategori' => $barang->kategori, // nilai asli (0/1)
-            'kategori_label' => $barang->kategori == 1 ? 'Dipinjam oleh siswa' : 'Milik Sekolah',
-
-            'tipe' => $barang->tipe, // nilai asli
-            'tipe_label' => $barang->tipe == 1 ? 'Barang berpindah' : 'Barang tetap',
-
-            'status' => $barang->status,
-            'status_label' => match ($barang->status) {
-                0 => 'Baru',
-                1 => 'Hilang',
-                2 => 'Rusak Ringan',
-                3 => 'Rusak',
-                4 => 'Diperbarui',
-                default => '-'
-            },
-
+            'kategori' => $barang->kategori_id,
+            'kategori_label' => $barang->kategori->nama_kategori ?? '-',
+            'tipe' => $barang->tipe_id,
+            'tipe_label' => $barang->tipe->nama_tipe ?? '-',
+            'status' => $barang->status_id,
+            'status_label' => $barang->status->nama_status ?? '-',
             'harga_awal' => $barang->harga_awal,
             'nama_siswa' => $barang->nama_siswa,
-            'keterangan' => $barang->keterangan ?? ''
+            'keterangan' => $barang->keterangan ?? '',
         ]);
     }
 
@@ -86,7 +111,7 @@ class QRCodeController extends Controller
         $validated = $validator->validated(); 
 
         $barang = Barang::findOrFail($id);
-        $barang->update($validated);
+        // $barang->update($validated);
         // $barang->nama_barang = $request->nama_barang;
         // $barang->nama_siswa = $request->nama_siswa;
         // $barang->harga_awal = $request->harga_awal;
@@ -98,52 +123,53 @@ class QRCodeController extends Controller
 
 
 
-        if ((int) $request->kategori == 1) {
-            $pinjaman = Pinjaman::where('barang_id', $barang->id)->first();
+        $barang->update([
+            'nama_barang' => $validated['nama_barang'],
+            'nama_siswa' => $validated['nama_siswa'] ?? null,
+            'harga_awal' => $validated['harga_awal'],
+            'tipe_id' => $validated['tipe'],
+            'kategori_id' => $validated['kategori'],
+            'status_id' => $validated['status'],
+            'keterangan' => $validated['keterangan'] ?? null,
+        ]);
 
-            if ($pinjaman) {
-                // Update jika perlu, misalnya kamu mau tambah field lain nanti
-                $pinjaman->barang_id = $barang->id;
-                $pinjaman->save();
-            } else {
-                // Jika belum ada, baru buat
-                Pinjaman::create([
-                    'barang_id' => $barang->id,
-                ]);
-            }
+        $qrData = [
+            'id' => $barang->id,
+            'nama_barang' => $barang->nama_barang,
+            'nama_siswa' => $barang->nama_siswa ?? null,
+            'kategori' => $barang->kategori->nama_kategori ?? null,
+            'status' => $barang->status->nama_status ?? null,
+            'tipe' => $barang->tipe->nama_tipe ?? null,
+            'harga_awal' => $barang->harga_awal,
+        ];
+
+        $barang->kodeQR = json_encode($qrData, JSON_UNESCAPED_UNICODE);
+        if (!in_array((int) $request->status_id, [2, 4])) {
+            $barang->keterangan = $request->keterangan;
         }
 
-        if ($request->status != 0) {
-            $suratPath = null;
+        // 🔁 Update QR JSON
+        // $barang->update([
+        //     'kodeQR' => json_encode([
+        //         'id' => $barang->id,
+        //         'nama_barang' => $barang->nama_barang,
+        //         'kode_unik' => 'BRG-' . str_pad($barang->id, 4, '0', STR_PAD_LEFT)
+        //     ]),
+        // ]);
 
-            // if ($request->hasFile('surat')) {
-            //     $file = $request->file('surat');
-            //     $suratPath = $file->storeAs('surat', $file->getClientOriginalName(), 'public');
-            // }
-
-            // Jika status != 4, maka kita buat entry di barang_rusaks
-            if ($request->status != 4) {
-                BarangRusak::create([
-                    'barang_id' => $id,
-                    'pinjaman_id' => null,
-                ]);
-            }
+        // 📌 Jika kategori "Dipinjam oleh siswa"
+        if ((int) $validated['kategori'] === 2) {
+            Pinjaman::firstOrCreate(['barang_id' => $barang->id]);
         }
 
-        // return dd(request->all());
+        // 📄 Jika status menunjukkan rusak (2, 3, 4)
+        if (in_array((int)$validated['status'], [2, 3, 4])) {
+            BarangRusak::firstOrCreate([
+                'barang_id' => $barang->id,
+            ]);
+        }
 
-        // return response()->json(['message' => 'Barang berhasil diperbarui']);
-        return response()->json(['ok' => true, 'data' => $validated]);
-        // Respon sesuai jenis request
-        // if ($request->expectsJson()) {
-        //     return response()->json([
-        //         'ok' => true,
-        //         'message' => 'Barang berhasil diperbarui',
-        //         'data' => $barang
-        //     ], 200);
-        // }
-        // return redirect()->route('qrcode.render')->with('success', 'Update barang telah dibarui');
-        // ->with('success', 'Update barang telah dibarui');
+        return response()->json(['ok' => true, 'data' => $barang]);
 
     }
 }

@@ -45,16 +45,20 @@
       </div>
     
       <div class="mb-3">
-        <label for="kategori" class="form-label">Kategori <span class="text-danger">*</span></label>
-        <select class="form-select" id="kategori_display" name="kategori_display" required>
-          <option value="0" {{ $barang->kategori == 0 ? 'selected' : '' }}>Milik Sekolah</option>
-          <option value="1" {{ $barang->kategori == 1 ? 'selected' : '' }}>Dipinjam oleh siswa</option>
+        <label for="kategori_id" class="form-label">Kategori <span class="text-danger">*</span></label>
+        <select class="form-select" id="kategori_id" name="kategori_id" required>
+          @foreach($categories as $category)
+            <option value="{{ $category->id }}" data-nama="{{ strtolower($category->nama_kategori) }}" 
+              {{ $barang->kategori_id == $category->id ? 'selected' : '' }}>
+              {{ $category->nama_kategori }}
+            </option>
+          @endforeach
         </select>
         {{-- <input type="hidden" name="kategori" id="kategori" value="{{ $barang->kategori }}"> --}}
         
       </div>
 
-      <div id="field-nama-siswa" class="{{ $barang->kategori == 1 ? '' : 'd-none' }} mb-3">
+      <div id="field-nama-siswa" class="mb-3" @if ($barang->kategori_id != '2') style="display:none;" @endif >
         <label for="nama_siswa">Nama Siswa</label>
         <input type="text" name="nama_siswa" id="nama_siswa" value="{{ old('nama_siswa', $barang->nama_siswa) }}" class="form-control">
       </div>
@@ -67,27 +71,42 @@
       @endif
       --}}
       <div class="mb-3">
-        <label for="tipe" class="form-label">Tipe <span class="text-danger">*</span></label>
-        <select class="form-select" id="tipe" name="tipe" required>
-          <option value="1" {{ $barang->tipe == 1 ? 'selected' : '' }}>Barang berpindah</option>
-          <option value="0" {{ $barang->tipe == 0 ? 'selected' : '' }}>Barang tetap</option>
+        <label for="tipe_id" class="form-label">Tipe <span class="text-danger">*</span></label>
+        <select class="form-select" id="tipe_id" name="tipe_id" required>
+          {{-- <option value="1" {{ $barang->tipe == 1 ? 'selected' : '' }}>Barang berpindah</option>
+          <option value="0" {{ $barang->tipe == 0 ? 'selected' : '' }}>Barang tetap</option> --}}
+          @foreach($types as $type)
+            <option value="{{ $type->id }}" 
+              {{ $barang->tipe_id == $type->id ? 'selected' : '' }}>
+              {{ $type->nama_tipe }}
+            </option>
+          @endforeach
         </select>
         {{-- <input type="hidden" name="tipe" id="tipe" value="{{ $barang->tipe }}"> --}}
       </div>
     
       <div class="mb-3">
-        <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
-        <select class="form-select" id="status" name="status" required>
-          <option value="0" {{ $barang->status == 0 ? 'selected' : '' }}>Baru</option>
+        <label for="status_id" class="form-label">Status <span class="text-danger">*</span></label>
+        <select class="form-select" id="status_id" name="status_id" required>
+          {{-- <option value="0" {{ $barang->status == 0 ? 'selected' : '' }}>Baru</option>
           <option value="1" {{ $barang->status == 1 ? 'selected' : '' }}>Hilang</option>
           <option value="2" {{ $barang->status == 2 ? 'selected' : '' }}>Rusak ringan</option>
           <option value="3" {{ $barang->status == 3 ? 'selected' : '' }}>Rusak</option>
-          <option value="4" {{ $barang->status == 4 ? 'selected' : '' }}>Diperbaiki</option>
+          <option value="4" {{ $barang->status == 4 ? 'selected' : '' }}>Diperbaiki</option> --}}
+          @foreach ($statuses as $status)
+            <option 
+              value="{{ $status->id }}" 
+              {{ $barang->status_id == $status->id ? 'selected' : '' }}>
+              {{ $status->nama_status }}
+            </option>
+          @endforeach
         </select>
       </div>
 
       {{-- This is for pinjaman id to throw in barangRusaks table --}}
       <input type="hidden" id="pinjaman_id" name="pinjaman_id" value="{{ $pinjaman->id }}">
+
+      {{-- {{ $pinjaman->id }} --}}
 
       <div id="keterangan_container">
         
@@ -146,12 +165,12 @@
 @push('scripts')
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    const kategoriSelect = document.getElementById('kategori_display');
+    const kategoriSelect = document.getElementById('kategori_id');
     const fieldNamaSiswa = document.getElementById('field-nama-siswa');
     const namaSiswaInput = document.getElementById('nama_siswa');
     const namaBarang = document.getElementById('nama_barang');
-    const tipeElement = document.getElementById('tipe');
-    const statusElement = document.getElementById('status');
+    const tipeElement = document.getElementById('tipe_id');
+    const statusElement = document.getElementById('status_id');
     const hargaElement = document.getElementById('harga_awal');
     const kodeQRInput = document.getElementById("kodeQR");
     const qrContainer = document.getElementById("qr-code");
@@ -162,12 +181,12 @@
     const suratContainer = document.getElementById("surat_container");
 
     function toggleNamaSiswa() {
-      fieldNamaSiswa.classList.toggle('d-none', kategoriSelect.value !== '1');
+      fieldNamaSiswa.classList.toggle('d-none', kategoriSelect.value !== '2');
     }
 
     function toggleSuratKeterangan() {
       const status = statusElement.value;
-      const show = status !== "0" && status !== "4";
+      const show = status !== "1" && status !== "5";
       keteranganContainer.innerHTML = show ? `
         <div class="mb-3">
           <label for="keterangan" class="form-label">Keterangan <span class="text-danger">*</span></label>
@@ -182,21 +201,39 @@
 
     const getLabel = {
       status: val => ({
-        "0": "Baru",
-        "1": "Hilang",
-        "2": "Rusak ringan",
-        "3": "Rusak",
-        "4": "Diperbaiki"
+        "1": "Baru",
+        "2": "Hilang",
+        "3": "Rusak Ringan",
+        "4": "Rusak Berat",
+        "5": "Diperbaiki"
       }[val] || "-"),
       kategori: val => val === "1" ? "Dipinjam oleh siswa" : "Milik Sekolah",
       tipe: val => val === "1" ? "Barang berpindah" : "Barang tetap"
     };
 
+    // function generateQRContent() {
+    //   const kategoriVal = kategoriSelect.value;
+    //   const namaSiswa = kategoriVal === "2" ? (namaSiswaInput?.value || '-') : "-";
+    //   return JSON.stringify({
+    //     id: barangId,
+    //   });
+    // }
+    
     function generateQRContent() {
       const kategoriVal = kategoriSelect.value;
-      const namaSiswa = kategoriVal === "1" ? (namaSiswaInput?.value || '-') : "-";
+      const namaSiswa = kategoriVal === "2" ? (namaSiswaInput?.value || '-') : "-";
+      const kategoriText = kategoriSelect.options[kategoriSelect.selectedIndex].text;
+      const tipeText = document.getElementById("tipe_id").options[document.getElementById("tipe_id").selectedIndex].text;
+      const statusText = document.getElementById("status_id").options[document.getElementById("status_id").selectedIndex].text;
+
       return JSON.stringify({
         id: barangId,
+        nama_barang: namaBarang.value,
+        kategori: kategoriText,
+        nama_siswa: namaSiswa,
+        tipe: tipeText,
+        status: statusText,
+        harga_awal: hargaElement.value
       });
     }
 
@@ -234,7 +271,7 @@
     });
 
     generateQRBtn?.addEventListener("click", function () {
-      if (kategoriSelect.value === "1" && (!namaSiswaInput || namaSiswaInput.value.trim() === "")) {
+      if (kategoriSelect.value === "2" && (!namaSiswaInput || namaSiswaInput.value.trim() === "")) {
         alert("Silakan isi Nama Siswa terlebih dahulu.");
         return;
       }
