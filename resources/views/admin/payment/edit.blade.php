@@ -65,10 +65,10 @@
       <input type="hidden" name="kategori" id="kategori" value="{{ $items->barang->kategori_id }}">
     </div>
 
-    @if ($items->barang->nama_siswa)
+    @if ($items->barang->peminjam)
       <div class="mb-3" id="field-nama-siswa">
-        <label for="nama_siswa" class="form-label">Nama Siswa <span class="text-danger">*</span></label>
-        <input type="text" class="form-control" id="nama_siswa" name="nama_siswa" value="{{ $items->barang->nama_siswa }}">
+        <label for="peminjam" class="form-label">Peminjam <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" id="peminjam" name="peminjam" value="{{ $items->barang->peminjam }}">
       </div>
     @endif
   
@@ -132,12 +132,23 @@
       <label class="form-label">Kode QR</label>
       <input type="text" class="form-control" name="kodeQR" value="{{ $items->barang->kodeQR }}" readonly>
     </div> --}}
-
-    <div class="mb-3">
-      <label for="qrPreview" class="form-label">Kode QR</label>
-      {{-- <div id="qrPreview" class="border rounded p-3 d-inline-block"></div> --}}
-      <div id="qr-code" class="my-3"></div>
-    </div>
+    @if ($items->barang->kodeQR)
+      <div>
+        <h6 class="fw-semibold mb-1">Generate Kode QR</h6>
+        {{-- <p class="fw-light mb-2">Item-#{{ $barang->kodeQR }}</p> --}}
+        <input type="text" class="visually-hidden" id="display_kodeQR" name="display_kodeQR" value="{{ old('kodeQR', $items->barang->kodeQR ?? '') }}">
+        <div id="qr-code" class="my-3"></div>
+        <input type="text" class="visually-hidden" name="kodeQR" id="kodeQR" value="{{ old('kodeQR', $items->barang->kodeQR ?? '') }}">
+        {{-- <img src="{{ asset('path/to/qr-code.png') }}" alt="QR Code" width="120"> --}}
+      </div>
+     @else
+     <div class="mb-3">
+       <label class="form-label">Generate Kode QR</label><br>
+       <button type="button" class="btn btn-sm btn-outline-dark" id="generate-qr">Klik untuk Generate Kode QR</button>
+       <div id="qr-code" class="my-3"></div>
+       <input type="text" class="visually-hidden" name="kodeQR" id="kodeQR" value="{{ old('kodeQR', $items->barang->kodeQR ?? '') }}">
+      </div>
+    @endif
 
   
     <div class="mb-3 ">
@@ -158,7 +169,7 @@
     <div class="mb-3">
       <label for="status" class="form-label">Biaya perbaikan <span class="text-danger">*</span></label>
       @if ($payment)
-        <input type="text" min="0" class="form-control" name="biaya_perbaikan" id="biaya_perbaikan" value="{{ $payment->biaya_perbaikan ? $payment->biaya_perbaikan : '' }}" required>
+        <input type="text" min="0" class="form-control" name="biaya_perbaikan" id="biaya_perbaikan" value="" required>
       @else
         <p class="fs-6 text-p-grey">
           <small>
@@ -223,82 +234,134 @@
 
 @push('scripts')
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const statusElement = document.getElementById("status_id");
-    const keteranganContainer = document.getElementById("keterangan_container");
-    const suratContainer = document.getElementById("surat_container");
-    
-    
+document.addEventListener("DOMContentLoaded", function () {
 
-    // Ambil data keterangan dari atribut data-keterangan
-    const savedKeterangan = keteranganContainer.dataset.keterangan;
-    const savedSurat = suratContainer.dataset.surat;
-    console.log("Image source is:", savedSurat);
+  const statusElement = document.getElementById("status_id");
+  const keteranganContainer = document.getElementById("keterangan_container");
+  const suratContainer = document.getElementById("surat_container");
 
-    function updateFields() {
-      const statusValue = statusElement.value;
-      keteranganContainer.innerHTML = "";
-      suratContainer.innerHTML = "";
+  const kodeQRInput = document.getElementById("kodeQR");
+  const qrContainer = document.getElementById("qr-code");
+  const generateQRBtn = document.getElementById("generate-qr");
 
-      if (statusValue !== "1") {
-        keteranganContainer.innerHTML = `
-          <div class="mb-3" id="field-keterangan">
-            <label for="keterangan" class="form-label">Keterangan <span class="text-danger">*</span></label>
-            <textarea name="keterangan" id="keterangan" cols="30" rows="4" class="form-control" required >${savedKeterangan || ''}</textarea>
-          </div>
-        `;
+  const barangId = {{ $items->barang->id }};
 
-        suratContainer.innerHTML = `
-          <div class="mb-3 d-flex flex-column" id="field-surat">
-            <label for="surat" class="form-label">Bukti Surat</label>
-            ${savedSurat ? `
-              <img src="${savedSurat}" class="img-fluid" alt="Surat sebelumnya" style="max-width: 500px;">
-            ` : `
+  // Ambil data keterangan dari atribut data
+  const savedKeterangan = keteranganContainer.dataset.keterangan;
+  const savedSurat = suratContainer.dataset.surat;
+
+  function updateFields() {
+
+    const statusValue = statusElement.value;
+
+    keteranganContainer.innerHTML = "";
+    suratContainer.innerHTML = "";
+
+    if (statusValue !== "1") {
+
+      keteranganContainer.innerHTML = `
+        <div class="mb-3" id="field-keterangan">
+          <label for="keterangan" class="form-label">
+            Keterangan <span class="text-danger">*</span>
+          </label>
+          <textarea name="keterangan" id="keterangan" cols="30" rows="4"
+          class="form-control" required>${savedKeterangan || ''}</textarea>
+        </div>
+      `;
+
+      suratContainer.innerHTML = `
+        <div class="mb-3 d-flex flex-column" id="field-surat">
+          <label for="surat" class="form-label">Bukti Surat</label>
+
+          ${savedSurat ? `
+            <img src="${savedSurat}" class="img-fluid"
+            alt="Surat sebelumnya" style="max-width:500px;">
+          ` : `
             <p class="fs-6 text-p-grey">
-              <small>
-                (Admin belum memasukkan surat kerusakan)
-              </small>
-            </p>  
+              <small>(Admin belum memasukkan surat kerusakan)</small>
+            </p>
             <input type="file" class="form-control" id="surat" name="surat">
-            `}
-          </div>
-        `;
-      }
+          `}
+        </div>
+      `;
+
     }
 
-    // Inisialisasi saat halaman dimuat
-    updateFields();
+  }
 
-    // Update saat status berubah
-    statusElement.addEventListener("change", updateFields);
+  // Jalankan saat halaman load
+  updateFields();
 
-    // Generate ulang QR Code dari nilai yang sudah tersimpan
-    const kodeQR = @json($items->barang->kodeQR ?? '');
-    const qrPreviewContainer = document.getElementById("qr-code");
+  // Jalankan saat status berubah
+  statusElement.addEventListener("change", updateFields);
 
-    if (kodeQR && qrPreviewContainer) {
-      new QRCode(qrPreviewContainer, {
-        text: kodeQR,
-        width: 256,
-        height: 256,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-      });
-    }
+  // Ambil QR jika sudah ada
+  const qrValue = document.getElementById("display_kodeQR")?.value;
+
+  function generateQRContent() {
+
+    return JSON.stringify({
+      id: barangId
+    });
+
+  }
+
+  function renderQRCode(content) {
+
+    if (!qrContainer) return;
+
+    qrContainer.innerHTML = "";
+
+    const wrapper = document.createElement("div");
+
+    qrContainer.appendChild(wrapper);
+
+    new QRCode(wrapper, {
+      text: content,
+      width: 256,
+      height: 256,
+      colorDark: "#000000",
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.H
+    });
+
+  }
+
+  function autoGenerateQR() {
+
+    const content = generateQRContent();
+
+    kodeQRInput.value = content;
+
+    renderQRCode(content);
+
+  }
+
+  // Klik tombol generate
+  generateQRBtn?.addEventListener("click", function () {
+
+    autoGenerateQR();
+
   });
 
-  const form = document.getElementById("submit-form");
-  const yesButton = document.getElementById("yes-button");
+  // Jika QR sudah ada → tampilkan langsung
+  if (qrValue) {
 
-   yesButton.addEventListener("click", function () {
-    form.submit();
-  });
+    renderQRCode(qrValue);
+
+  }
+
+});
 
 
-  // Real-time Formatter integer to rupiah 
-  
- 
+// Submit modal confirmation
+const form = document.getElementById("submit-form");
+const yesButton = document.getElementById("yes-button");
+
+yesButton?.addEventListener("click", function () {
+
+  form.submit();
+
+});
 </script>
-
 @endpush

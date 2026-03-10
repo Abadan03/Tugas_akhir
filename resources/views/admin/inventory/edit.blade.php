@@ -39,7 +39,7 @@
         {{-- <input type="text" class="form-control" id="nama_barang" name="nama_barang" value="{{ $barang->nama_barang }}" required> --}}
         <select class="form-select" id="items_id" name="items_id">
         @foreach ($items as $item)
-            <option value="{{ $item->id }}">{{ $item->nama_barang }}</option>
+            <option value="{{ $item->id }}" {{ $barang->items_id == $item->id ? 'selected' : '' }}>{{ $item->nama_barang }}</option>
         @endforeach
         </select>
       </div>
@@ -53,7 +53,7 @@
           {{-- <option value="0" {{ $barang->kategori == '0' ? 'selected' : '' }}>Milik Sekolah</option>
           <option value="1" {{ $barang->kategori == '1' ? 'selected' : '' }}>Dipinjam oleh siswa</option> --}}
           @foreach($categories as $category)
-            <option value="{{ $category->id }}" data-nama="{{ strtolower($category->nama_kategori) }}" 
+            <option value="{{ $category->id }}" data-trigger="{{ strtolower($category->defaultTrigger) }}" 
               {{ $barang->kategori_id == $category->id ? 'selected' : '' }}>
               {{ $category->nama_kategori }}
             </option>
@@ -61,11 +61,16 @@
         </select>
       </div>
       
-      <div id="nama_siswa_container" @if ($barang->kategori_id != '1') style="display:none;" @endif>
+      {{-- <div id="peminjam_container" @if ($barang->kategori_id != '1') style="display:none;" @endif>
         <div class="mb-3">
-          <label for="nama_siswa" class="form-label">Nama Siswa <span class="text-danger">*</span></label>
-          <input type="text" class="form-control" id="nama_siswa" name="nama_siswa" value="{{ old('nama_siswa', $barang->nama_siswa ?? '') }}">
+          <label for="peminjam" class="form-label">Peminjam <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" id="peminjam" name="peminjam" value="{{ old('peminjam', $barang->peminjam ?? '') }}">
         </div>
+      </div> --}}
+
+       <div class="mb-3 d-none" id="field-peminjam">
+        <label for="peminjam" class="form-label">Peminjam <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" id="peminjam" name="peminjam" value="{{ old('peminjam', $barang->peminjam ?? '') }}">
       </div>
     
       <div class="mb-3">
@@ -111,6 +116,9 @@
       <div class="mb-3 d-none" id="field-keterangan">
         <label for="keterangan" class="form-label">Keterangan <span class="text-danger">*</span></label>
         <textarea class="form-control" id="keterangan" name="keterangan" rows="3" placeholder="Tuliskan keterangan tambahan..."></textarea>
+        @error('keterangan')
+            <div class="text-danger mt-1"><small>{{ $message }}</small></div>
+        @enderror
       </div>
       <div class="mb-3 d-none" id="field-surat">
         <label for="surat" class="form-label">Surat (Opsional)</label>
@@ -122,25 +130,6 @@
         <input type="number" class="form-control" name="harga_awal" id="harga" value="{{ $barang->harga_awal }}" required>
       </div>
 
-      {{-- @if ($barang->kodeQR) 
-        <div class="mb-3">
-          <label class="form-label">Kode QR</label>
-          <input type="text" class="visually-hidden" id="kodeQR" name="kodeQR" value="{{ old('kodeQR', $barang->kodeQR ?? '') }}">
-          <input type="text" class="visually-hidden" id="kodeQR" name="kodeQR" value="{{ old('kodeQR', $barang->kodeQR ?? '') }}">
-
-          <div id="qr-code" class="my-3"></div>
-        </div>
-
-      @else
-          <div class="mb-3">
-            <label class="form-label">Generate Kode QR</label><br>
-            <button type="button" class="btn btn-sm btn-outline-dark" id="generate-qr">Klik untuk Generate Kode QR</button>
-            <input type="text" class="" name="kodeQR" id="kodeQR" value="">
-          </div>
-
-
-        <div id="qr-code" class="my-3"></div>
-      @endif --}}
       @if ($barang->kodeQR)
         <div>
           <h6 class="fw-semibold mb-1">Kode QR</h6>
@@ -186,8 +175,8 @@
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     const kategoriSelect = document.getElementById('kategori_id');
-    const namaSiswaContainer = document.getElementById('nama_siswa_container');
-    const namaSiswaInput = document.getElementById('nama_siswa');
+    const peminjamField = document.getElementById('field-peminjam');
+    const peminjamInput = document.getElementById('peminjam');
     const qrContainer = document.getElementById('qr-code');
     const generateBtn = document.getElementById('generate-qr');
     const qrInput = document.getElementById('kodeQR');
@@ -196,19 +185,21 @@
   // const suratContainer = document.getElementById('surat_container');
 
     /**
-     * Fungsi untuk menampilkan / menyembunyikan field nama siswa
+     * Fungsi untuk menampilkan / menyembunyikan field trigger siswa
      * secara dinamis berdasarkan kategori yang dipilih
      */
-    function updateFormVisibility() {
+    function togglePeminjaman() {
       const selectedOption = kategoriSelect.options[kategoriSelect.selectedIndex];
-      const kategoriNama = (selectedOption?.getAttribute('data-nama') || '').toLowerCase();
-
-      // tampilkan hanya jika nama kategori mengandung kata 'siswa'
-      if (kategoriNama.includes('siswa')) {
-        namaSiswaContainer.style.display = 'block';
+      const trigger = selectedOption.dataset.trigger;
+      console.log(trigger, "ini trigger");
+      // if (kategoriSelect.value == 2) {
+      if (trigger == 0) {
+        peminjamField.classList.remove('d-none');
+        // peminjamInput.required = true;
       } else {
-        namaSiswaContainer.style.display = 'none';
-        namaSiswaInput.value = '';
+        peminjamField.classList.add('d-none');
+        // peminjamInput.required = false;
+        peminjamInput.value = '';
       }
     }
 
@@ -287,12 +278,12 @@
     }
 
     // Jalankan fungsi saat halaman pertama kali dimuat
-    updateFormVisibility();
+    togglePeminjaman();
     toggleSuratDanKeterangan();
 
 
     // Event listener
-    kategoriSelect.addEventListener('change', updateFormVisibility);
+    kategoriSelect.addEventListener('change', togglePeminjaman);
     statusSelect.addEventListener('change', toggleSuratDanKeterangan);
 
 

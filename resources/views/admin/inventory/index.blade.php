@@ -8,7 +8,13 @@
     <span class="input-group-text bg-white border-0">
       <i class="bi bi-search text-muted"></i>
     </span>
-    <input type="text" id="search" class="form-control border" style="max-width: 400px;" placeholder="Search nama barang, produk id, kategori">
+    <input type="text" id="search" class="form-control border" style="max-width: 400px;" placeholder="Search Nama Barang, Keterangan, Kategori...">
+    
+    {{-- <form method="GET" action="{{ route('inventaris.cari') }}">
+      <button type="submit">
+        
+      </button>
+    </form> --}}
   </div>
   <div>
     @if (Auth()->user())
@@ -69,7 +75,7 @@
           <i class="bi bi-gear-fill me-2"></i> Tambah / Lihat Status Master
         </a>
         <a href="{{ route('items_masters.index') }}" class="btn btn-outline-dark w-100">
-          <i class="bi bi-box-seam me-2"></i> Tambah / Lihat Item Master
+          <i class="bi bi-box-seam me-2"></i> Tambah / Lihat Barang Master
         </a>
       </div>
     </div>
@@ -85,7 +91,7 @@
           <th><input type="checkbox" id="select-all"></th>
           <th>Nama barang</th>
           <th>Kategori</th>
-          <th>Nama Siswa</th>
+          <th>Peminjam</th>
           <th>Tipe</th>
           <th>Status</th>
           <th>Keterangan</th>
@@ -100,7 +106,7 @@
           <td>{{ $item->nama_barang }}</td>
           {{-- <td>{{ $item->kategori == 1 ? 'Dipinjam oleh siswa' : 'Milik Sekolah' }}</td> --}}
           <td>{{ $item->kategori->nama_kategori ?? ''}}</td>
-          <td>{{ $item->nama_siswa ?: '-' }}</td>
+          <td>{{ $item->peminjam ?? '-' }}</td>
           {{-- <td>{{ $item->tipe == 0 ? 'Barang Tetap' : 'Barang Berpindah' }}</td> --}}
           <td>{{ $item->tipe->nama_tipe ?? '' }}</td>
           <td>
@@ -114,20 +120,22 @@
             @endswitch --}}
           </td>
           <td>{{ $item->keterangan ?: '-' }}</td>
-          <td class="d-flex gap-2">
-            <a href="{{ route('inventaris.show', $item->id) }}" class="text-black">
-                <i class="bi bi-eye"></i>
-            </a>
-            <button type="button" onclick="deleteItem('{{ route('inventaris.destroy', $item->id) }}')" style="border:none; background:none;">
-              <i class="bi bi-trash"></i>
-            </button>
-            {{-- @if (($item->status == 0 || $item->status == 4) && $item->kategori != 1) --}}
-            @if (in_array(optional($item->status)->id, [1, 5]) && optional($item->kategori)->id == 1)
-
-              <a href="{{ route('inventaris.edit', $item->id) }}" class="text-black">
-                  <i class="bi bi-pencil-square"></i>
+          <td class="text-nowrap">
+            <div class="d-flex gap-1">
+              <a href="{{ route('inventaris.show', $item->id) }}" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center">
+                <i class="bi bi-eye me-1"></i> Detail
               </a>
-            @endif
+
+              @if (in_array(optional($item->status)->id, [1, 5]) && optional($item->kategori)->id == 1)
+                <a href="{{ route('inventaris.edit', $item->id) }}" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center">
+                  <i class="bi bi-pencil-square me-1"></i> Edit
+                </a>
+              @endif
+
+              <button type="button" onclick="deleteItem('{{ route('inventaris.destroy', $item->id) }}')" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center">
+                <i class="bi bi-trash me-1"></i> Hapus
+              </button>
+            </div>
           </td>
         </tr>
         @empty
@@ -135,6 +143,12 @@
             <td colspan="9" class="text-center">Tidak ada data tersedia.</td>
           </tr>
         @endforelse
+        <tr id="no-results" style="display: none;">
+          <td colspan="9" class="text-center py-4">
+            <i class="bi bi-search-heart mb-2 d-block fs-2 text-muted"></i>
+            <span class="text-muted fw-medium">Barang yang anda cari tidak ada di sini...</span>
+          </td>
+        </tr>
       </tbody>
 
       
@@ -205,6 +219,12 @@
         $(this).toggle(match);
         if (match) matchCount++;
       });
+
+      if (matchCount === 0 && value !== "") {
+        $("#no-results").show();
+      } else {
+        $("#no-results").hide();
+      }
 
       $("#no-results").toggle(matchCount === 0);
       updateNomorUrut(); 

@@ -12,6 +12,10 @@ class BarangController extends Controller
     {
         // paginasi agar konsisten dengan view lain
         $items = ItemMasters::orderBy('id', 'desc')->paginate(15);
+        $items->getCollection()->transform(function ($item) {
+            $item->has_barangs = \App\Models\Barang::where('items_id', $item->id)->exists();
+            return $item;
+        });
 
         // view: resources/views/admin/masters/item/index.blade.php (sesuaikan)
         return view('admin.masters.barang.index', compact('items'));
@@ -63,31 +67,31 @@ class BarangController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(ItemMasters $itemMaster)
+    public function show(ItemMasters $barang)
     {
         // opsional — kalau tidak perlu, boleh kosong atau redirect ke edit/detail
-        return view('admin.masters.barang.show', ['item' => $itemMaster]);
+        return view('admin.masters.barang.show', ['item' => $barang]);
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(ItemMasters $itemMaster)
+    public function edit(ItemMasters $barang)
     {
-        return view('admin.masters.barang.edit', ['item' => $itemMaster]);
+        return view('admin.masters.barang.edit', ['item' => $barang]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, ItemMasters $itemMaster)
+    public function update(Request $request, ItemMasters $barang)
     {
         $request->validate([
             'nama_barang' => 'required|string|max:255',
             'deskripsi'   => 'nullable|string',
         ]);
 
-        $itemMaster->update($request->only('nama_barang', 'deskripsi'));
+        $barang->update($request->only('nama_barang', 'deskripsi'));
 
         return redirect()->route('items_masters.index')
                          ->with('success', 'Item master berhasil diperbarui.');
@@ -96,9 +100,15 @@ class BarangController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(ItemMasters $itemMaster)
+    public function destroy(ItemMasters $barang)
     {
-        $itemMaster->delete();
+        // Cek keterkaitan: jika item master masih dipakai barang, tolak penghapusan
+        if (\App\Models\Barang::where('items_id', $barang->id)->exists()) {
+            return redirect()->route('items_masters.index')
+                             ->with('error', 'Item master tidak dapat dihapus karena masih digunakan oleh data barang.');
+        }
+
+        $barang->delete();
 
         return redirect()->route('items_masters.index')
                          ->with('success', 'Item master berhasil dihapus.');

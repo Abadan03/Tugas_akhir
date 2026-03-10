@@ -10,7 +10,7 @@
     <span class="input-group-text bg-white border-0">
       <i class="bi bi-search text-muted"></i>
     </span>
-    <input type="text" id="search" class="form-control border" style="max-width: 400px;" placeholder="Search nama barang, produk id, kategori">
+    <input type="text" id="search" class="form-control border" style="max-width: 400px;" placeholder="Search Nama Barang, Keterangan, Kategori...">
   </div>
   
   <div>
@@ -54,9 +54,10 @@
             <th>No</th>
             <th>Nama barang</th>
             <th>Kategori</th>
-            <th>Nama Siswa</th>
+            <th>Peminjam</th>
             <th>Tipe</th>
             <th>Status</th>
+            <th>Keterangan</th>
             <th>Action</th>
         </tr>
     </thead>
@@ -69,48 +70,51 @@
           <td>{{ $data->firstItem() + $index }}</td> {{-- Nomor urut global --}}
           <td>{{ $item->nama_barang }}</td>
           <td>{{ $item->kategori->nama_kategori ?? ''}}</td>
-          <td>{{ $item->nama_siswa ?: '-' }}</td>
+          <td>{{ $item->peminjam ?? '-' }}</td>
           <td>{{ $item->tipe->nama_tipe ?? '' }}</td>
           <td>
             {{ $item->status->nama_status ?? '' }}
           </td>
+          <td>
+            {{ $item->keterangan ?? '-' }}
+          </td>
 
+          <td class="text-nowrap">
+            <div class="d-flex gap-1">
+              <a href="{{ route('peminjaman.show', $item->id) }}" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center">
+                <i class="bi bi-eye me-1"></i> Detail
+              </a>
+
+              @if (in_array(optional($item->status)->id, [1, 5]))
+                <a href="{{ route('peminjaman.edit', $item->id) }}" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center">
+                  <i class="bi bi-pencil-square me-1"></i> Edit
+                </a>
+              @endif
+
+              <button type="button" onclick="deleteItem('{{ route('inventaris.destroy', $item->id) }}')" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center">
+                <i class="bi bi-trash me-1"></i> Hapus
+              </button>
+            </div>
+          </td>
          
-          <td class="d-flex gap-2">
-
-            {{-- {{ $item->barang_id }} --}}
+          {{-- <td class="d-flex gap-2">
               <a href="{{ route('peminjaman.show', $item->id) }}" class="text-black">
                   <i class="bi bi-eye"></i>
               </a>
-              {{-- <form action="{{ route('peminjaman.destroy', $item->id) }}" method="POST">
-                  @csrf
-                  @method('DELETE')
-                  <button type="submit" style="border: none; background: none;" class="text-black">
-                      <i class="bi bi-trash"></i>
-                  </button>
-              </form> --}}
-              {{-- @if ($item->barang->status == 0 && $item->barang->kategori != 0)
-                <a href="{{ route('peminjaman.edit', $item->barang->id) }}" class="text-black">
-                    <i class="bi bi-pencil-square"></i>
-                </a>
-              @endif --}}
-              {{-- @if ($item->barang->status == 0 || $item->barangstatus === 4) --}}
               @if (in_array(optional($item->status)->id, [1, 5]))
-                {{-- @if ($item->barang->kategori != 0) --}}
-                @if (in_array(optional($item->kategori)->id, [2]))
+
                   <a href="{{ route('peminjaman.edit', $item->id) }}" class="text-black">
                       <i class="bi bi-pencil-square"></i>
                   </a>
-                @endif
-              {{-- @elseif ($item->barang->status == 4 && $item->kategori != 1) 
-                  <a href="{{ route('inventaris.edit', $item->id) }}" class="text-black">
-                      <i class="bi bi-pencil-square"></i>
-                  </a> --}}
               @endif
-              
-          </td>
+          </td> --}}
 
-          
+          <tr id="no-results" style="display: none;">
+            <td colspan="9" class="text-center py-4">
+              <i class="bi bi-search-heart mb-2 d-block fs-2 text-muted"></i>
+              <span class="text-muted fw-medium">Barang yang anda cari tidak ada di sini...</span>
+            </td>
+          </tr>
       </tr>
 
       @empty
@@ -129,7 +133,7 @@
 </div>
 
 <script>
-  console.log(first)
+  // console.log(first)
 $(document).ready(function() {
     $("#search").on("keyup", function () {
       var value = $(this).val().toLowerCase();
@@ -143,6 +147,12 @@ $(document).ready(function() {
         $(this).toggle(match);
         if (match) matchCount++;
       });
+
+      if (matchCount === 0 && value !== "") {
+        $("#no-results").show();
+      } else {
+        $("#no-results").hide();
+      }
 
       $("#no-results").toggle(matchCount === 0);
       updateNomorUrut(); 

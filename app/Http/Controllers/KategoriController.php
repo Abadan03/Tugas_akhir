@@ -11,6 +11,10 @@ class KategoriController extends Controller
     public function index()
     {
         $categories = CategoryMaster::orderBy('id', 'desc')->paginate(10);
+        $categories->getCollection()->transform(function ($category) {
+            $category->has_barangs = \App\Models\Barang::where('kategori_id', $category->id)->exists();
+            return $category;
+        });
         return view('admin.masters.kategori.index', compact('categories'));
     }
 
@@ -55,7 +59,7 @@ class KategoriController extends Controller
     public function edit($id)
     {
         $category = CategoryMaster::findOrFail($id);
-        return view('admin.category_masters.create', compact('category'));
+        return view('admin.masters.kategori.create', compact('category'));
     }
 
     public function update(Request $request, $id)
@@ -78,6 +82,19 @@ class KategoriController extends Controller
     public function destroy($id)
     {
         $category = CategoryMaster::findOrFail($id);
+
+        // Cek data default sistem — tidak boleh dihapus
+        if ($category->is_default) {
+            return redirect()->route('admin.category_masters.index')
+                             ->with('error', 'Kategori ini adalah data default sistem dan tidak dapat dihapus.');
+        }
+
+        // Cek keterkaitan: jika kategori masih dipakai barang, tolak penghapusan
+        if (\App\Models\Barang::where('kategori_id', $category->id)->exists()) {
+            return redirect()->route('admin.category_masters.index')
+                             ->with('error', 'Kategori tidak dapat dihapus karena masih digunakan oleh data barang.');
+        }
+
         $category->delete();
 
         return redirect()->route('admin.category_masters.index')

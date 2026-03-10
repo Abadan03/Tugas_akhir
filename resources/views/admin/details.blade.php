@@ -20,7 +20,7 @@
 
 <div class="container-fluid my-4">
   <div class="d-flex align-items-center gap-2 mb-4">
-    <a href="{{ route('inventaris.index') }}">
+    <a href="{{ route('dashboard') }}">
       <i class="bi bi-arrow-left-square fs-3"></i>
     </a>
     <h4 class="mb-0">Detail Barang</h4>
@@ -36,27 +36,29 @@
       <div>
         <h6 class="fw-semibold mb-1">Kategori :</h6>
         <p class="fw-light">
-          @if ($barang->kategori == 1)
+          {{-- @if ($barang->kategori == 1)
               Dipinjam oleh siswa
             @elseif ($barang->kategori == 0)
               Milik Sekolah
-            @endif
+            @endif --}}
+            {{ $barang->kategori->nama_kategori ?? '-' }}
         </p>
       </div>
-      @if ($barang->kategori == 1)
+      @if ($barang->kategori)
         <div>
-          <h6 class="fw-semibold mb-1">Nama Siswa :</h6>
-          <p class="fw-light">{{ $barang->nama_siswa }}</p>
+          <h6 class="fw-semibold mb-1">Peminjam :</h6>
+          <p class="fw-light">{{ $barang->peminjam ?? '-' }}</p>
         </div>
       @endif
       <div>
         <h6 class="fw-semibold mb-1">Tipe :</h6>
         <p class="fw-light">
-          @if ($barang->tipe == 0)
+          {{-- @if ($barang->tipe == 0)
             Barang Tetap
           @elseif ($barang->tipe == 1)
             Barang Berpindah
-          @endif
+          @endif --}}
+          {{ $barang->tipe->nama_tipe ?? '-' }}
         </p>
       </div>
       <div>
@@ -66,7 +68,7 @@
       <div>
         <h6 class="fw-semibold mb-1">Status :</h6>
         <p class="fw-light">
-          @if ($barang->status == 0)
+          {{-- @if ($barang->status == 0)
             Baru
           @elseif ($barang->status == 1)
             Hilang
@@ -76,7 +78,9 @@
             Rusak
           @elseif ($barang->status == 4)
             Diperbarui
-          @endif
+          @endif --}}
+          {{ $barang->status->nama_status ?? '-' }}
+        </p>
       </div>
       @isset($pembayaran)
         <div>
@@ -129,7 +133,7 @@
   </div>
 </div>
 
-@isset($ihistory)
+@isset($history)
   
 @if($history && $history->count())
   <div class="mt-4">
@@ -143,11 +147,11 @@
           <div>Status: 
             @php
               switch($log->status) {
-                case 0: $label = 'Baru'; break;
-                case 1: $label = 'Hilang'; break;
-                case 2: $label = 'Rusak Ringan'; break;
-                case 3: $label = 'Rusak Berat'; break;
-                case 4: $label = 'Diperbarui'; break;
+                case 1: $label = 'Baru'; break;
+                case 2: $label = 'Hilang'; break;
+                case 3: $label = 'Rusak Ringan'; break;
+                case 4: $label = 'Rusak Berat'; break;
+                case 5: $label = 'Diperbarui'; break;
                 default: $label = 'Tidak diketahui';
               }
             @endphp

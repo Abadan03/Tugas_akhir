@@ -32,6 +32,16 @@
 
     {{-- {{ $barang->tipe }} --}}
 
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
 
   <form action="{{ route('peminjaman.update', $barang->id) }}" method="POST" enctype="multipart/form-data" class="p-4 bg-white">
     @csrf
@@ -39,8 +49,8 @@
     {{-- @if ($barang->status == 0) --}}
       {{-- <h1>assd</h1> --}}
       <div class="mb-3">
-        <label for="nama_barang" class="form-label">Nama Barang<span class="text-danger">*</span></label>
-        <input type="text" class="form-control" id="nama_barang_display" name="nama_barang_display" value="{{ $barang->nama_barang }}" required disabled>
+        <label for="nama_barang" class="form-label">Pilih Barang<span class="text-danger">*</span></label>
+        <input type="text" class="form-control" id="nama_barang_display" name="nama_barang_display" value="{{ $barang->nama_barang }}" required readonly>
         <input type="hidden" class="form-control" id="nama_barang" name="nama_barang" value="{{ $barang->nama_barang }}">
       </div>
     
@@ -48,28 +58,27 @@
         <label for="kategori_id" class="form-label">Kategori <span class="text-danger">*</span></label>
         <select class="form-select" id="kategori_id" name="kategori_id" required>
           @foreach($categories as $category)
-            <option value="{{ $category->id }}" data-nama="{{ strtolower($category->nama_kategori) }}" 
+            <option value="{{ $category->id }}" data-trigger="{{ $category->defaultTrigger ? 'true' : 'false' }}" 
               {{ $barang->kategori_id == $category->id ? 'selected' : '' }}>
               {{ $category->nama_kategori }}
             </option>
           @endforeach
         </select>
-        {{-- <input type="hidden" name="kategori" id="kategori" value="{{ $barang->kategori }}"> --}}
+        @error('kategori_id')
+            <div class="text-danger mt-1"><small>{{ $message }}</small></div>
+        @enderror
         
       </div>
 
-      <div id="field-nama-siswa" class="mb-3" @if ($barang->kategori_id != '2') style="display:none;" @endif >
-        <label for="nama_siswa">Nama Siswa</label>
-        <input type="text" name="nama_siswa" id="nama_siswa" value="{{ old('nama_siswa', $barang->nama_siswa) }}" class="form-control">
+      <div id="field-peminjam" class="mb-3" style="display:none;">
+        <label for="peminjam" class="form-label">Peminjam<span class="text-danger">*</span></label>
+        <input type="text" name="peminjam" id="peminjam" value="{{ old('peminjam', $barang->peminjam) }}" class="form-control">
+        @error('peminjam')
+            <div class="text-danger mt-1"><small>{{ $message }}</small></div>
+        @enderror
       </div>
 
-      {{-- @if ($barang->nama_siswa)
-        <div class="mb-3" id="field-nama-siswa">
-          <label for="nama_siswa" class="form-label">Nama Siswa <span class="text-danger">*</span></label>
-          <input type="text" class="form-control" id="nama_siswa" name="nama_siswa" value="{{ $barang->nama_siswa }}">
-        </div>
-      @endif
-      --}}
+
       <div class="mb-3">
         <label for="tipe_id" class="form-label">Tipe <span class="text-danger">*</span></label>
         <select class="form-select" id="tipe_id" name="tipe_id" required>
@@ -82,7 +91,9 @@
             </option>
           @endforeach
         </select>
-        {{-- <input type="hidden" name="tipe" id="tipe" value="{{ $barang->tipe }}"> --}}
+        @error('tipe_id')
+            <div class="text-danger mt-1"><small>{{ $message }}</small></div>
+        @enderror
       </div>
     
       <div class="mb-3">
@@ -101,6 +112,9 @@
             </option>
           @endforeach
         </select>
+        @error('status_id')
+            <div class="text-danger mt-1"><small>{{ $message }}</small></div>
+        @enderror
       </div>
 
       {{-- This is for pinjaman id to throw in barangRusaks table --}}
@@ -111,11 +125,17 @@
       <div id="keterangan_container">
         
       </div>
+      @error('keterangan')
+          <div class="text-danger mt-1"><small>{{ $message }}</small></div>
+      @enderror
     
       
       <div id="surat_container">
 
       </div>
+      @error('surat')
+          <div class="text-danger mt-1"><small>{{ $message }}</small></div>
+      @enderror
     
       <div class="mb-3">
         <label for="harga" class="form-label">Harga Awal <span class="text-danger">*</span></label>
@@ -128,12 +148,22 @@
         <label class="form-label">Kode QR</label>
         <input type="text" class="form-control" name="kodeQR" value="{{ $barang->kodeQR }}" readonly>
       </div> --}}
-
-      <div class="mb-3">
-        <label class="form-label">Generate Kode QR</label><br>
-        <button type="button" class="btn btn-sm btn-outline-dark" id="generate-qr">Klik untuk Generate Kode QR</button>
+    @if ($barang->kodeQR)
+      <div>
+        <h6 class="fw-semibold mb-1">Generate Kode QR</h6>
+        {{-- <p class="fw-light mb-2">Item-#{{ $barang->kodeQR }}</p> --}}
+        <input type="text" class="visually-hidden" id="display_kodeQR" name="display_kodeQR" value="{{ old('kodeQR', $barang->kodeQR ?? '') }}">
+        <div id="qr-code" class="my-3"></div>
         <input type="text" class="visually-hidden" name="kodeQR" id="kodeQR" value="{{ old('kodeQR', $barang->kodeQR ?? '') }}">
+        {{-- <img src="{{ asset('path/to/qr-code.png') }}" alt="QR Code" width="120"> --}}
       </div>
+     @else
+     <div class="mb-3">
+       <label class="form-label">Generate Kode QR</label><br>
+       <button type="button" class="btn btn-sm btn-outline-dark" id="generate-qr">Klik untuk Generate Kode QR</button>
+       <input type="text" class="visually-hidden" name="kodeQR" id="kodeQR" value="{{ old('kodeQR', $barang->kodeQR ?? '') }}">
+      </div>
+    @endif
 
       <div id="qr-code" class="my-3"></div>
     
@@ -149,6 +179,9 @@
           </p>
           <input type="file" class="form-control" id="bukti" name="bukti">
         @endif
+        @error('bukti')
+            <div class="text-danger mt-1"><small>{{ $message }}</small></div>
+        @enderror
       </div>
     
       <div class="d-flex justify-content-end gap-2 mt-4">
@@ -166,8 +199,8 @@
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     const kategoriSelect = document.getElementById('kategori_id');
-    const fieldNamaSiswa = document.getElementById('field-nama-siswa');
-    const namaSiswaInput = document.getElementById('nama_siswa');
+    const fieldPeminjam = document.getElementById('field-peminjam');
+    const namaSiswaInput = document.getElementById('peminjam');
     const namaBarang = document.getElementById('nama_barang');
     const tipeElement = document.getElementById('tipe_id');
     const statusElement = document.getElementById('status_id');
@@ -181,7 +214,15 @@
     const suratContainer = document.getElementById("surat_container");
 
     function toggleNamaSiswa() {
-      fieldNamaSiswa.classList.toggle('d-none', kategoriSelect.value !== '2');
+      const selectedOption = kategoriSelect.options[kategoriSelect.selectedIndex];
+      const trigger = selectedOption.getAttribute('data-trigger');
+      
+      if (trigger === 'false') {
+        fieldPeminjam.style.display = "block";
+      } else {
+        fieldPeminjam.style.display = "none";
+        document.getElementById('peminjam').value = "";
+      }
     }
 
     function toggleSuratKeterangan() {
@@ -218,22 +259,28 @@
     //     id: barangId,
     //   });
     // }
+
+    // Jika data qr ada
+    const qrValue = document.getElementById("display_kodeQR")?.value;
+
+    if (qrValue) {
+      const qrContainer = document.getElementById("qr-code");
+
+      new QRCode(qrContainer, {
+        text: qrValue,
+        width: 256,
+        height: 256,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    }
     
     function generateQRContent() {
       const kategoriVal = kategoriSelect.value;
-      const namaSiswa = kategoriVal === "2" ? (namaSiswaInput?.value || '-') : "-";
-      const kategoriText = kategoriSelect.options[kategoriSelect.selectedIndex].text;
-      const tipeText = document.getElementById("tipe_id").options[document.getElementById("tipe_id").selectedIndex].text;
-      const statusText = document.getElementById("status_id").options[document.getElementById("status_id").selectedIndex].text;
 
       return JSON.stringify({
         id: barangId,
-        nama_barang: namaBarang.value,
-        kategori: kategoriText,
-        nama_siswa: namaSiswa,
-        tipe: tipeText,
-        status: statusText,
-        harga_awal: hargaElement.value
       });
     }
 

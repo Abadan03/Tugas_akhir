@@ -11,6 +11,10 @@ class TipeController extends Controller
     public function index()
     {
         $types = TypeMaster::orderBy('id', 'desc')->paginate(10);
+        $types->getCollection()->transform(function ($type) {
+            $type->has_barangs = \App\Models\Barang::where('tipe_id', $type->id)->exists();
+            return $type;
+        });
         return view('admin.masters.tipe.index', compact('types'));
     }
 
@@ -67,6 +71,19 @@ class TipeController extends Controller
     public function destroy($id)
     {
         $type = TypeMaster::findOrFail($id);
+
+        // Cek data default sistem — tidak boleh dihapus
+        if ($type->is_default) {
+            return redirect()->route('type_masters.index')
+                             ->with('error', 'Tipe ini adalah data default sistem dan tidak dapat dihapus.');
+        }
+
+        // Cek keterkaitan: jika tipe masih dipakai barang, tolak penghapusan
+        if (\App\Models\Barang::where('tipe_id', $type->id)->exists()) {
+            return redirect()->route('type_masters.index')
+                             ->with('error', 'Tipe tidak dapat dihapus karena masih digunakan oleh data barang.');
+        }
+
         $type->delete();
 
         return redirect()->route('type_masters.index')

@@ -44,10 +44,10 @@
             {{ $barang->kategori->nama_kategori ?? '-' }}
         </p>
       </div>
-      @if ($barang->kategori && strtolower($barang->kategori->nama_kategori) === 'dipinjam oleh siswa')
+      @if ($barang->kategori && strtolower($barang->kategori->defaultTrigger) != true)
         <div>
-          <h6 class="fw-semibold mb-1">Nama Siswa :</h6>
-          <p class="fw-light">{{ $barang->nama_siswa }}</p>
+          <h6 class="fw-semibold mb-1">Peminjam :</h6>
+          <p class="fw-light">{{ $barang->peminjam }}</p>
         </div>
       @endif
       <div>

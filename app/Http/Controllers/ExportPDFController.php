@@ -19,7 +19,7 @@ class ExportPDFController extends Controller
             return back()->with('error', 'Tidak ada barang yang dipilih');
         }
 
-        $barangs = Barang::whereIn('id', $selectedIds)->get();
+        $barangs = Barang::with('kategori', 'tipe', 'status')->whereIn('id', $selectedIds)->get();
 
         $pdf = PDF::loadView('admin.exports.barang_qr_pdf', compact('barangs'))->setPaper('A4', 'portrait');
 

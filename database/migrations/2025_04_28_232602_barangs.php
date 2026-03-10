@@ -17,7 +17,9 @@ return new class extends Migration
             $table->string('nama_barang');
             $table->integer('harga_awal');
             $table->integer('kategori');
-            $table->string('nama_siswa')->nullable();
+            // PENGINGAT dibawah ini awalnya nama_siswa dengan string dan nullable
+            $table->string('peminjam')->nullable();
+            // $table->boolean('ISdipinjam')->default('false');
             $table->integer('tipe');
             $table->integer('status');
             $table->integer('item');

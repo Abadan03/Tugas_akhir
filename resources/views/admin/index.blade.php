@@ -37,7 +37,7 @@
                 <th>Id</th>
                 <th>Nama barang</th>
                 {{-- <th>Product ID</th> --}}
-                <th>Nama Siswa</th>
+                <th>Peminjam</th>
                 <th>Kategori</th>
                 <th>Tipe</th>
                 <th>Status</th>
@@ -50,7 +50,7 @@
                     <td>{{ $no++ }}</td> {{-- ID frontend --}}
                     <td>{{ $item->nama_barang }}</td>
                     {{-- <td>{{ $item->nama_barang }}</td> --}}
-                    <td>{{ $item->nama_siswa ?: '-' }}</td>
+                    <td>{{ $item->peminjam ?: '-' }}</td>
                     {{-- <td>{{ $item->product_id }}</td> --}}
                     {{-- <td>{{ $item->kategori == 1 ? 'Dipinjam oleh siswa' : 'Milik Sekolah' }}</td>
                     <td>{{ $item->tipe == 0 ? 'Barang Tetap' : 'Barang Berpindah' }}</td>
@@ -67,8 +67,13 @@
                     <td>{{ $item->kategori->nama_kategori ?? '-' }}</td>
                     <td>{{ $item->tipe->nama_tipe ?? '-' }}</td>
                     <td>{{ $item->status->nama_status ?? '-' }}</td>
-                    <td>
-                        <a href="{{ route('dashboard.details', $item->id) }}" class="btn btn-sm btn-primary">Details</a>
+                    <td class="text-nowrap">
+                        <div class="d-flex gap-1">
+                            {{-- <a href="{{ route('dashboard.details', $item->id) }}" class="btn btn-sm btn-primary">Details</a> --}}
+                            <a href="{{ route('dashboard.details', $item->id) }}" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center">
+                                <i class="bi bi-pencil-square me-1"></i> Details
+                            </a>
+                        </div>
                     </td>
                 </tr>
             @endforeach

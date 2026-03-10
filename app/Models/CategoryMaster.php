@@ -13,7 +13,8 @@ class CategoryMaster extends Model
     protected $table = 'category_masters';
     protected $fillable = [
         'nama_kategori',
-        'kode'
+        'kode',
+        'deskripsi'
     ];
 
     public function barangs()

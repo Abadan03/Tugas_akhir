@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('status_id')->nullable()->constrained('status_masters')->cascadeOnUpdate()->nullOnDelete();
             $table->foreignId('tipe_id')->nullable()->constrained('type_masters')->cascadeOnUpdate()->nullOnDelete();
             $table->foreignId('items_id')->nullable()->constrained('items_masters')->cascadeOnUpdate()->nullOnDelete();
+            $table->foreignId('pinjaman_id')->nullable()->constrained('pinjamans')->cascadeOnUpdate()->nullOnDelete();
 
             // hapus kolom lama jika sudah tidak dipakai
             $table->dropColumn(['kategori', 'status', 'tipe','item']);

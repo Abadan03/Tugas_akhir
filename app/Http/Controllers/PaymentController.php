@@ -52,14 +52,14 @@ class PaymentController extends Controller
             //     )
             //     ->paginate(20);
 
-             $data = DB::table('barangs')
+            $data = DB::table('barangs')
             ->join('barang_rusaks', 'barang_rusaks.barang_id', '=', 'barangs.id')
             ->leftJoin('pembayaran', 'pembayaran.barang_rusaks_id', '=', 'barang_rusaks.id')
             ->leftJoin('category_masters', 'barangs.kategori_id', '=', 'category_masters.id')
             ->leftJoin('type_masters', 'barangs.tipe_id', '=', 'type_masters.id')
             ->leftJoin('status_masters', 'barangs.status_id', '=', 'status_masters.id')
             ->whereIn('barangs.status_id', [2, 3, 4]) // hanya status tertentu
-            ->whereNull('pembayaran.id') // hanya barang_rusaks yang belum ada pembayaran
+            // ->whereNull('pembayaran.id') 
             ->select(
                 'barangs.id as barang_id',
                 'barang_rusaks.id as barang_rusaks_id',
@@ -67,7 +67,7 @@ class PaymentController extends Controller
                 'barangs.status_id',
                 'barangs.kategori_id',
                 'barangs.tipe_id',
-                'barangs.nama_siswa',
+                'barangs.peminjam',
                 'category_masters.nama_kategori',
                 'type_masters.nama_tipe',
                 'status_masters.nama_status',
@@ -82,7 +82,7 @@ class PaymentController extends Controller
 
         $datas = Barang::with(['kategori', 'status', 'tipe', 'itemMaster'])->paginate(20);
 
-        
+        // return dd($data);
         
         // $data = Barang::whereNotIn('status', [0,4])->with('barangRusak')->get();
 
@@ -222,12 +222,6 @@ class PaymentController extends Controller
         // Generate ulang isi QR
         $kodeQR = json_encode([
             'id' => $barang->id,
-            'nama_barang' => $barang->nama_barang,
-            'tipe' => $barang->tipe_id,
-            'kategori' => $barang->kategori_id,
-            'status' => $barang->status_id,
-            'keterangan' => $barang->keterangan,
-            'harga_awal' => $barang->harga_awal,
         ]);
         $barang->kodeQR = $kodeQR;
         $barang->save();

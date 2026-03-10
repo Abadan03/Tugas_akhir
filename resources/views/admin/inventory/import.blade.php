@@ -2,7 +2,7 @@
 
 @section('content')
 
-<div class="container">
+<div class="container my-5">
     <h4>Import Data Barang (CSV)</h4>
 
     {{-- Alert sukses dan error --}}

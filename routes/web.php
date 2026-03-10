@@ -64,6 +64,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Ini untuk export PDF dan generate qr code with server-side generator
     Route::post('/inventaris/export-pdf', [ExportPDFController::class, 'exportSelected'])->name('inventaris.exportPDF');
 
+    // Search Get Query
+    Route::get('inventaris/search', [InventoryController::class, 'searchQuery'])->name('inventaris.cari');
+
 
     Route::post('/logout', [RegisterController::class, 'logout'])->name('logout');
 });

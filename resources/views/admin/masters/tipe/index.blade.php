@@ -27,6 +27,7 @@
     <thead>
       <tr>
         <th>No</th>
+        <th>Kode</th>
         <th>Nama Tipe</th>
         <th>Deskripsi</th>
         <th>Action</th>
@@ -36,21 +37,70 @@
       @forelse ($types as $index => $item)
       <tr>
         <td>{{ $types->firstItem() + $index }}</td>
+        <td><span class="badge bg-secondary">{{ $item->kode ?? '-' }}</span></td>
         <td>{{ $item->nama_tipe }}</td>
         <td>{{ $item->deskripsi ?? '-' }}</td>
-        <td class="d-flex gap-2">
-          <a href="{{ route('tipe.edit', $item->id) }}" class="text-black"><i class="bi bi-pencil-square"></i></a>
-          <form action="{{ route('tipe.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Yakin hapus tipe ini?')">
-            @csrf @method('DELETE')
-            <button type="submit" class="text-danger border-0 bg-transparent"><i class="bi bi-trash"></i></button>
-          </form>
+        <td class="d-flex gap-2 align-items-center">
+          <a href="{{ route('tipe.edit', $item->id) }}" class="text-black" title="Edit"><i class="bi bi-pencil-square"></i></a>
+          @if($item->is_default)
+            <span class="text-primary" title="Data default sistem — tidak dapat dihapus" data-bs-toggle="tooltip" data-bs-placement="top">
+              <i class="bi bi-shield-lock-fill"></i>
+            </span>
+          @elseif($item->has_barangs)
+            <span class="text-muted" title="Tidak dapat dihapus: tipe ini masih digunakan oleh data barang" data-bs-toggle="tooltip" data-bs-placement="top">
+              <i class="bi bi-lock-fill"></i>
+            </span>
+          @else
+            <button type="button" class="text-danger border-0 bg-transparent p-0"
+              title="Hapus Tipe"
+              data-bs-toggle="modal"
+              data-bs-target="#deleteModal"
+              data-action="{{ route('tipe.destroy', $item->id) }}"
+              data-name="{{ $item->nama_tipe }}">
+              <i class="bi bi-trash"></i>
+            </button>
+          @endif
         </td>
       </tr>
       @empty
-        <tr><td colspan="4" class="text-center">Belum ada tipe barang.</td></tr>
+        <tr><td colspan="5" class="text-center">Belum ada tipe barang.</td></tr>
       @endforelse
     </tbody>
   </table>
   <div class="d-flex justify-content-end mt-3">{{ $types->links('pagination::bootstrap-5') }}</div>
 </div>
+
+{{-- Modal Konfirmasi Hapus --}}
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel"><i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>Konfirmasi Hapus</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Yakin ingin menghapus tipe <strong id="deleteName"></strong>? Tindakan ini tidak dapat dibatalkan.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <form id="deleteForm" method="POST">
+          @csrf
+          @method('DELETE')
+          <button type="submit" class="btn btn-danger">Hapus</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 @endsection
+
+@push('scripts')
+<script>
+  const deleteModal = document.getElementById('deleteModal');
+  deleteModal.addEventListener('show.bs.modal', function (event) {
+    const button = event.relatedTarget;
+    document.getElementById('deleteName').textContent = button.getAttribute('data-name');
+    document.getElementById('deleteForm').action = button.getAttribute('data-action');
+  });
+</script>
+@endpush

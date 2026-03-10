@@ -22,6 +22,7 @@
 <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <form id="editForm" class="modal-content">
+      @csrf
       <div class="modal-header">
         <h5 class="modal-title" id="editModalLabel">Edit Barang</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
@@ -32,7 +33,12 @@
         <div class="row g-3">
           <div class="col-md-6">
             <label for="edit-nama-barang" class="form-label">Nama Barang</label>
-            <input type="text" class="form-control" id="edit-nama-barang" name="nama_barang" required>
+            <input type="text" class="form-control" id="edit-nama-barang" name="nama_barang" required readonly>
+            <!-- <select class="form-select" id="edit-nama-barang" name="nama_barang" required>
+            @foreach($categories as $kategori)
+              <option value="{{ $kategori->id }}">{{ $kategori->nama_kategori }}</option>
+            @endforeach
+            </select> -->
           </div>
 
           <div class="col-md-6">
@@ -53,26 +59,26 @@
             <label for="edit-kategori" class="form-label">Kategori</label>
             <select class="form-select" id="edit-kategori" name="kategori" required>
               @foreach($categories as $kategori)
-                <option value="{{ $kategori->id }}">{{ $kategori->nama_kategori }}</option>
+                <option value="{{ $kategori->id }}" data-trigger="{{ $kategori->defaultTrigger ? 'true' : 'false' }}">{{ $kategori->nama_kategori }}</option>
               @endforeach
             </select>
           </div>
 
             {{-- <div class="col-md-6 visually-hidden" id="edit-nama-siswa-container">
-              <label for="edit-nama-siswa" class="form-label">Nama Siswa</label>
-              <select class="form-select" id="edit-nama-siswa" name="nama_siswa">
-                <option value="">Pilih siswa</option>
+              <label for="edit-nama-siswa" class="form-label">Peminjam</label>
+              <select class="form-select" id="edit-nama-siswa" name="peminjam">
+                <option value="">Pilih peminjam</option>
                 @foreach($siswaList as $siswa)
-                  <option value="{{ $siswa->nama_siswa }}">{{ $siswa->nama_siswa }}</option>
+                  <option value="{{ $siswa->peminjam }}">{{ $siswa->peminjam }}</option>
                 @endforeach
               </select>
             </div> --}}
 
-          {{-- <div id="nama_siswa_container" @if ($barang->kategori_id != '1') style="display:none;" @endif> --}}
-          <div id="nama_siswa_container" style="display:none;">
+          {{-- <div id="peminjam_container" @if ($barang->kategori_id != '1') style="display:none;" @endif> --}}
+          <div id="peminjam_container" style="display:none;">
             <div class="mb-3">
-              <label for="nama_siswa" class="form-label">Nama Siswa <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" id="nama_siswa" name="nama_siswa" value="{{ old('nama_siswa', $barang->nama_siswa ?? '') }}">
+              <label for="peminjam" class="form-label">Peminjam<span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="peminjam" name="peminjam" value="{{ old('peminjam', $barang->peminjam ?? '') }}">
             </div>
           </div>
 
@@ -112,15 +118,17 @@ document.addEventListener("DOMContentLoaded", function () {
   const keteranganContainer = document.getElementById("edit-keterangan-container");
 
   function updateConditionalFields() {
-    const kategoriVal = document.getElementById("edit-kategori").value;
+    const kategoriSelect = document.getElementById("edit-kategori");
+    const selectedKategori = kategoriSelect.options[kategoriSelect.selectedIndex];
+    const trigger = selectedKategori.getAttribute("data-trigger");
     const statusVal = document.getElementById("edit-status").value;
 
-    // Jika kategori = 2 (Dipinjam oleh siswa)
-    if (kategoriVal === "2") {
-      document.getElementById("nama_siswa_container").style.display = "block";
+    // Jika kategori memiliki defaultTrigger = false (artinya butuh input Peminjam)
+    if (trigger === "false") {
+      document.getElementById("peminjam_container").style.display = "block";
     } else {
-      document.getElementById("nama_siswa_container").style.display = "none";
-      document.getElementById("nama_siswa").value = "";
+      document.getElementById("peminjam_container").style.display = "none";
+      document.getElementById("peminjam").value = "";
     }
 
     // Jika status = 2, 3, 4
@@ -152,7 +160,7 @@ document.addEventListener("DOMContentLoaded", function () {
               <li class="list-group-item"><strong>Nama Barang:</strong> ${barang.nama_barang}</li>
               <li class="list-group-item"><strong>Kategori:</strong> ${barang.kategori_label}</li>
               <li class="list-group-item"><strong>Harga Awal:</strong> Rp${Number(barang.harga_awal).toLocaleString()}</li>
-              <li class="list-group-item"><strong>Nama Siswa:</strong> ${barang.nama_siswa ?? '-'}</li>
+              <li class="list-group-item"><strong>Peminjam:</strong> ${barang.peminjam ?? '-'}</li>
               <li class="list-group-item"><strong>Tipe:</strong> ${barang.tipe_label}</li>
               <li class="list-group-item"><strong>Status:</strong> ${barang.status_label}</li>
               <li class="list-group-item"><strong>Keterangan:</strong> ${barang.keterangan ?? '-'}</li>
@@ -176,8 +184,8 @@ document.addEventListener("DOMContentLoaded", function () {
           document.getElementById('edit-tipe').value = barang.tipe;
           document.getElementById('edit-kategori').value = barang.kategori;
           document.getElementById('edit-status').value = barang.status;
-          // document.getElementById('edit-nama-siswa').value = barang.nama_siswa ?? '';
-          document.getElementById('nama_siswa').value = barang.nama_siswa ?? '';
+          // document.getElementById('edit-nama-siswa').value = barang.peminjam ?? '';
+          document.getElementById('peminjam').value = barang.peminjam ?? '';
           document.getElementById('edit-keterangan').value = barang.keterangan ?? '';
           updateConditionalFields();
           new bootstrap.Modal(document.getElementById('editModal')).show();
@@ -208,7 +216,7 @@ document.addEventListener("DOMContentLoaded", function () {
               <li class="list-group-item"><strong>Nama Barang:</strong> ${barang.nama_barang}</li>
               <li class="list-group-item"><strong>Kategori:</strong> ${barang.kategori_label}</li>
               <li class="list-group-item"><strong>Harga Awal:</strong> Rp${Number(barang.harga_awal).toLocaleString()}</li>
-              <li class="list-group-item"><strong>Nama Siswa:</strong> ${barang.nama_siswa ?? '-'}</li>
+              <li class="list-group-item"><strong>Peminjam:</strong> ${barang.peminjam ?? '-'}</li>
               <li class="list-group-item"><strong>Tipe:</strong> ${barang.tipe_label}</li>
               <li class="list-group-item"><strong>Status:</strong> ${barang.status_label}</li>
               <li class="list-group-item"><strong>Keterangan:</strong> ${barang.keterangan ?? '-'}</li>
@@ -219,7 +227,9 @@ document.addEventListener("DOMContentLoaded", function () {
     .catch(err => alert("Terjadi kesalahan saat update: " + err.message));
   });
 
-  Html5Qrcode.getCameras().then(cameras => {
+  Html5Qrcode.getCameras()
+  .then(cameras => {
+    console.log("Cameras found:", cameras); // debug
     if (cameras && cameras.length) {
       html5QrCode.start(
         { facingMode: "environment" },
@@ -233,6 +243,11 @@ document.addEventListener("DOMContentLoaded", function () {
     } else {
       resultContainer.innerHTML = `<p class="text-danger">Tidak ditemukan kamera.</p>`;
     }
+  })
+  .catch(err => {
+    // Ini yang sering tidak ketangkep!
+    console.error("getCameras error:", err);
+    resultContainer.innerHTML = `<p class="text-danger">Error akses kamera: ${err}</p>`;
   });
 });
 </script>

@@ -35,9 +35,12 @@ class LoanController extends Controller
         // $keterangan = BarangRusak::findOrFail();
         // $data = Pinjaman::with('barang')->paginate(20);
         // $data = Barang::with(['kategori', 'status', 'tipe', 'itemMaster'])->paginate(20);
+        $getDefaultTrigger = CategoryMaster::where('defaultTrigger', true)->get();
+
         $data = Barang::with(['kategori', 'status', 'tipe', 'itemMaster'])
-            ->where('kategori_id', 2)
-            ->paginate(20);
+            ->where('kategori_id', '<>' , $getDefaultTrigger->pluck('id'))
+            ->paginate(10);
+
         // return dd($data);
 
         return view('admin.loan.index', compact('data'));
@@ -82,7 +85,7 @@ class LoanController extends Controller
                 'barang_rusaks.id as barang_rusaks_id',
                 'barang_rusaks.surat as surat',
                 'barangs.nama_barang as nama_barang',
-                'barangs.nama_siswa as nama_siswa',
+                'barangs.peminjam as peminjam',
                 'barangs.kategori_id as kategori_id',
                 'barangs.tipe_id as tipe_id',
                 'barangs.harga_awal as harga_awal',
@@ -121,7 +124,7 @@ class LoanController extends Controller
         //     'barang' => $barang,
         //     'pinjaman' => $pinjaman
         // ]);
-
+        // return dd($barang);
         return view('admin.loan.edit', compact('barang', 'pinjaman', 'categories', 'types', 'statuses'));
     }
 
@@ -136,39 +139,58 @@ class LoanController extends Controller
         // $pinjaman = Pinjaman::firstOrCreate(['barang_id' => $id]);
         // return dd($request->all());
 
+        $validatedData = $request->validate([
+            // 'nama_barang' => 'required|string|max:255',
+            'kategori_id' => 'required|integer',
+            'tipe_id' => 'required|integer',
+            'status_id' => 'required|integer',
+            'harga_awal' => 'required|numeric',
+            'bukti' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'surat' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048', 
+            'keterangan' => 'nullable|string|max:1000', 
+            'peminjam' => 'nullable|string|max:255', 
+        ]);
+
+        // if ($validatedData->fails()) {
+        //     return self::index($request)->withErrors($validatedData->errors());
+        // }
+        $getDefaultTrigger = CategoryMaster::where('defaultTrigger', true)->get();
+        if($request->kategori_id == $getDefaultTrigger->pluck('id')) {
+            $pinjaman->delete();
+        }
+
         if ($request->hasFile('surat')) {
             $file = $request->file('surat');
             $path = $file->storeAs('images', $file->getClientOriginalName(), 'public');
 
-            BarangRusak::create([
-                'barang_id' => $id,
-                'pinjaman_id' => $request->pinjaman_id,
-                'surat' => $path,
-            ]);
+            BarangRusak::updateOrCreate(
+                ['barang_id' => $id],
+                [
+                    'pinjaman_id' => $request->pinjaman_id,
+                    'surat' => $path,
+                ]
+            );
         } else {
             // Tetap buat record BarangRusak minimal
-            BarangRusak::firstOrCreate([
-                'barang_id' => $id,
-                'pinjaman_id' => $request->pinjaman_id,
-            ]);
+            BarangRusak::updateOrCreate(
+                ['barang_id' => $id],
+                ['pinjaman_id' => $request->pinjaman_id]
+            );
         }
 
         // Update barang - ini selalu dijalankan
         $barang->status_id = $request->status_id;
         $barang->keterangan = $request->keterangan;
-        $barang->nama_siswa = $request->nama_siswa;
+        $barang->peminjam = $request->peminjam;
         $barang->kodeQR = $request->kodeQR;
         $barang->tipe_id = $request->tipe_id;
         $barang->kategori_id = $request->kategori_id;
-
-         // Cek apakah kategori milik sekolah atau dipinjam siswa
-            if ($request->kategori_id == 2) {
-                // Jika dipinjam siswa, simpan nama siswa
-                $barang->nama_siswa = $request->nama_siswa;
-            } else {
-            // Jika milik sekolah, kosongkan nama siswa
-            // $barang->delete();
-            $barang->nama_siswa = null;
+        
+         // pengecekan if peminjam sudah sesuai dengan defaultTrigger
+        if ($request->kategori_id != $getDefaultTrigger->pluck('id')) {
+                $barang->peminjam = $request->peminjam;
+        } else {
+            $barang->peminjam = null;
 
             // Kosongkan relasi ke pinjaman karena ini milik sekolah
             $barangRusak = BarangRusak::where('barang_id', $barang->id)->first();
@@ -177,9 +199,6 @@ class LoanController extends Controller
                 $barangRusak->save();
             }
 
-            // if ($pinjaman) {
-            //     $pinjaman->delete(); 
-            // }
         }
 
         // Upload bukti pembelian jika ada

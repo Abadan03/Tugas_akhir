@@ -11,6 +11,10 @@ class StatusController extends Controller
     public function index()
     {
         $statuses = StatusMaster::orderBy('id', 'desc')->paginate(10);
+        $statuses->getCollection()->transform(function ($status) {
+            $status->has_barangs = \App\Models\Barang::where('status_id', $status->id)->exists();
+            return $status;
+        });
         return view('admin.masters.status.index', compact('statuses'));
     }
 
@@ -67,6 +71,19 @@ class StatusController extends Controller
     public function destroy($id)
     {
         $status = StatusMaster::findOrFail($id);
+
+        // Cek data default sistem — tidak boleh dihapus
+        if ($status->is_default) {
+            return redirect()->route('status_masters.index')
+                             ->with('error', 'Status ini adalah data default sistem dan tidak dapat dihapus.');
+        }
+
+        // Cek keterkaitan: jika status masih dipakai barang, tolak penghapusan
+        if (\App\Models\Barang::where('status_id', $status->id)->exists()) {
+            return redirect()->route('status_masters.index')
+                             ->with('error', 'Status tidak dapat dihapus karena masih digunakan oleh data barang.');
+        }
+
         $status->delete();
 
         return redirect()->route('status_masters.index')

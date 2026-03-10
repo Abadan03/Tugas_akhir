@@ -98,21 +98,10 @@
                                         <td style="padding-left: 10px;">
                                             <div style="display: flex; flex-direction: column; gap: 6px;">
                                                 <div><strong>Nama:</strong> {{ $barang->nama_barang }}</div>
-                                                <div><strong>Kategori:</strong> {{ $barang->kategori == 1 ? 'Dipinjam oleh siswa' : 'Milik Sekolah' }}</div>
-                                                @if($barang->kategori == 1)
-                                                    <div><strong>Nama Siswa:</strong> {{ $barang->nama_siswa ?? '-' }}</div>
-                                                @endif
-                                                <div><strong>Tipe:</strong> {{ $barang->tipe == 0 ? 'Barang Tetap' : 'Barang Berpindah' }}</div>
-                                                <div><strong>Status:</strong>
-                                                    @switch($barang->status)
-                                                        @case(0) Baru @break
-                                                        @case(1) Hilang @break
-                                                        @case(2) Rusak Ringan @break
-                                                        @case(3) Rusak @break
-                                                        @case(4) Diperbarui @break
-                                                        @default - @break
-                                                    @endswitch
-                                                </div>
+                                                <div><strong>Kategori:</strong> {{ $barang->kategori->nama_kategori }}</div>
+                                                    <div><strong>Peminjam:</strong> {{ $barang->peminjam ?? '-' }}</div>
+                                                <div><strong>Tipe:</strong> {{ $barang->tipe->nama_tipe ?? '-' }}</div>
+                                                <div><strong>Status:</strong> {{ $barang->status->nama_status ?? '-' }}</div>
                                                 <div><strong>Keterangan:</strong> {{ $barang->keterangan ?? '-' }}</div>
                                             </div>
                                         </td>

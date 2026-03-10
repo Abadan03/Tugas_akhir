@@ -10,7 +10,7 @@
       <span class="input-group-text bg-white border-0">
         <i class="bi bi-search text-muted"></i>
       </span>
-      <input type="text" id="search" class="form-control border" style="max-width: 400px;" placeholder="Search nama barang, produk id, kategori">
+      <input type="text" id="search" class="form-control border" style="max-width: 400px;" placeholder="Search Nama Barang, Keterangan, Kategori...">
     </div>
     
     <div>
@@ -54,7 +54,7 @@
               <th>Nama Barang</th>
               {{-- <th>Id barang</th> --}}
               <th>Kategori</th>
-              <th>Nama Siswa</th>
+              <th>Peminjam</th>
               <th>Tipe</th>
               <th>Status</th>
               <th>Keterangan</th>
@@ -79,9 +79,9 @@
             @endif
             </td> --}}
             <td>{{ $item->nama_kategori ?? ''}}</td>
-            @if ($item->nama_siswa)
+            @if ($item->peminjam)
               <td>
-                {{ $item->nama_siswa }}
+                {{ $item->peminjam ?? '' }}
               </td>
             @else
               <td>
@@ -110,30 +110,28 @@
             @endif
             </td> --}}
             <td>
-              {{ $item->nama_status ?? '' }}
+              {{ $item->nama_status ?? '-' }}
             </td>
-            <td>{{ $item->keterangan }}</td>
+            <td>{{ $item->keterangan ?? '-'}}</td>
             {{-- <td>{{ $item->harga }}</td> --}}
-            <td class="d-flex gap-2">
-                {{-- @if ($item->status == 4)
-                  <a href="{{ route('pembayaran.show', $item->pembayaran_id) }}" class="text-black">
-                    <i class="bi bi-eye"></i>
+
+            <td class="text-nowrap">
+              <div class="d-flex gap-1">
+
+                @if ($item->status_id != 1 && $item->status_id != 5)
+                  <a href="{{ route('pembayaran.edit', $item->barang_rusaks_id) }}" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center">
+                    <i class="bi bi-pencil-square me-1"></i> Edit
                   </a>
-                @endif --}}
-                {{-- <form action="{{ route('pembayaran.destroy', $item->barang_rusaks_id) }}" method="POST">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" style="border: none; background: none;" class="text-black">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </form> --}}
-                {{-- @if ($item->status_id != 4) --}}
+                @endif
+              </div>
+            </td>
+            {{-- <td class="d-flex gap-2">
                 @if ($item->status_id != 1 && $item->status_id != 5)
                   <a href="{{ route('pembayaran.edit', $item->barang_rusaks_id) }}" class="text-black">
                       <i class="bi bi-pencil-square"></i>
                   </a>
                 @endif
-            </td>
+            </td> --}}
         </tr>
         @empty
         {{-- Jika data kosong --}}
@@ -141,6 +139,13 @@
               Tidak ada data tersedia.
             </div>
         @endforelse
+
+        <tr id="no-results" style="display: none;">
+          <td colspan="9" class="text-center py-4">
+            <i class="bi bi-search-heart mb-2 d-block fs-2 text-muted"></i>
+            <span class="text-muted fw-medium">Whoops! Barang yang anda cari tidak ada di sini...</span>
+          </td>
+        </tr>
       </tbody>
     </table>
 
@@ -163,6 +168,12 @@
             $(this).toggle(match);
             if (match) matchCount++;
           });
+
+          if (matchCount === 0 && value !== "") {
+            $("#no-results").show();
+          } else {
+            $("#no-results").hide();
+          }
 
           $("#no-results").toggle(matchCount === 0);
           updateNomorUrut(); 

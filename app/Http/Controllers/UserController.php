@@ -76,9 +76,11 @@ class UserController extends Controller
         })->with('barangRusak.barang')->first();
         // return dd($pembayaran);
 
-        
+        $history = itemStatusLog::where('barang_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-        return view('admin.inventory.details', compact('barang', 'pembayaran'));
+        return view('admin.details', compact('barang', 'pembayaran', 'history'));
 
     }
 }

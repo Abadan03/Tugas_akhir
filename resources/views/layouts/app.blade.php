@@ -29,9 +29,6 @@
 <link rel='stylesheet' href='https://cdn.datatables.net/1.13.5/css/dataTables.bootstrap5.min.css'>
 <!-- Font Awesome CSS -->
 <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css'>
-
-<i class="bi bi-eye"></i>
-
   {{-- <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet"> --}}
 
   {{-- QR CODE ===== --}}
@@ -76,10 +73,22 @@
     </div>
   </main>
   {{-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> --}}
-  <script src="https://unpkg.com/html5-qrcode"></script>
   {{-- @vite(['resources/js/app.js']) --}}
   @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
+
   @stack('scripts')
+
+  {{-- Inisialisasi Bootstrap Tooltip secara global --}}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+      tooltipTriggerList.forEach(function (el) {
+        new bootstrap.Tooltip(el);
+      });
+    });
+  </script>
 
 </body>

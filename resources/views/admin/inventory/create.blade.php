@@ -44,14 +44,15 @@
         <select class="form-select" id="kategori_id" name="kategori_id" required>
           <option value="" disabled selected>Pilih kategori</option>
           @foreach ($categories as $category)
-            <option value="{{ $category->id }}">{{ $category->nama_kategori }}</option>
+            <option value="{{ $category->id }}" data-trigger="{{ $category->defaultTrigger }}">{{ $category->nama_kategori }} </option>
           @endforeach
+            
         </select>
       </div>
 
-      <div class="mb-3 d-none" id="field-nama-siswa">
-        <label for="nama_siswa" class="form-label">Nama Siswa <span class="text-danger">*</span></label>
-        <input type="text" class="form-control" id="nama_siswa" name="nama_siswa">
+      <div class="mb-3 d-none" id="field-peminjam">
+        <label for="peminjam" class="form-label">Peminjam <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" id="peminjam" name="peminjam">
       </div>
 
       <div class="mb-3">
@@ -110,8 +111,9 @@
   document.addEventListener('DOMContentLoaded', function () {
     const form = document.querySelector('form');
     const kategoriSelect = document.getElementById('kategori_id');
-    const namaSiswaField = document.getElementById('field-nama-siswa');
-    const namaSiswaInput = document.getElementById('nama_siswa');
+    // const GetTtrigger = document.querySelector('#kategori_id');
+    const peminjamField = document.getElementById('field-peminjam');
+    const peminjamInput = document.getElementById('peminjam');
 
     const statusSelect = document.getElementById('status_id');
     const suratField = document.getElementById('field-surat');
@@ -124,16 +126,22 @@
     // qrContainer.id = "qrCodeContainer";
     // qrContainer.classList.add("mt-3");
     // form.parentNode.appendChild(qrContainer);
+    
+
 
     // toggle Nama Siswa
-    function toggleNamaSiswa() {
-      if (kategoriSelect.value == 2) {
-        namaSiswaField.classList.remove('d-none');
-        namaSiswaInput.required = true;
+    function togglePeminjaman() {
+      const selectedOption = kategoriSelect.options[kategoriSelect.selectedIndex];
+      const trigger = selectedOption.dataset.trigger;
+      console.log(trigger, "ini trigger");
+      // if (kategoriSelect.value == 2) {
+      if (trigger == 0) {
+        peminjamField.classList.remove('d-none');
+        peminjamInput.required = true;
       } else {
-        namaSiswaField.classList.add('d-none');
-        namaSiswaInput.required = false;
-        namaSiswaInput.value = '';
+        peminjamField.classList.add('d-none');
+        peminjamInput.required = false;
+        peminjamInput.value = '';
       }
     }
 
@@ -155,12 +163,13 @@
       }
     }
 
-    kategoriSelect.addEventListener('change', toggleNamaSiswa);
+    kategoriSelect.addEventListener('change', togglePeminjaman);
     statusSelect.addEventListener('change', toggleSuratDanKeterangan);
 
     // Trigger on load
-    toggleNamaSiswa();
+    togglePeminjaman();
     toggleSuratDanKeterangan();
+
 
      // === Submit handler dengan QR Auto Generate ===
     // form.addEventListener('submit', async function (e) {

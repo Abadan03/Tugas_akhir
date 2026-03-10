@@ -15,7 +15,7 @@ class Barang extends Model
         'nama_barang',
         'harga_awal',
         'kategori_id',
-        'nama_siswa',
+        'peminjam',
         'tipe_id',
         'status_id',
         'items_id',
@@ -44,15 +44,15 @@ class Barang extends Model
             return $this->hasMany(ItemStatusLog::class, 'barang_id');
         }
 
-        public function kategori()
-        {
-            return $this->belongsTo(CategoryMaster::class, 'kategori_id');
-        }
+    public function kategori()
+    {
+        return $this->belongsTo(CategoryMaster::class, 'kategori_id');
+    }
 
     public function status()
-        {
-            return $this->belongsTo(StatusMaster::class, 'status_id');
-        }
+    {
+        return $this->belongsTo(StatusMaster::class, 'status_id');
+    }
 
     public function tipe()
         {
