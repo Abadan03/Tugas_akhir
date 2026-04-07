@@ -109,16 +109,24 @@
           <td>{{ $item->peminjam ?? '-' }}</td>
           {{-- <td>{{ $item->tipe == 0 ? 'Barang Tetap' : 'Barang Berpindah' }}</td> --}}
           <td>{{ $item->tipe->nama_tipe ?? '' }}</td>
-          <td>
+          @if ($item->status->nama_status === 'Baru')
+              <td class="bg-primary text-white">
+                  {{ $item->status->nama_status ?? '' }}
+              </td>
+          @elseif (in_array($item->status->nama_status, ['Hilang', 'Rusak', 'Rusak Ringan', 'Rusak Berat']))
+              {{-- Beri warna merah (bg-danger) untuk barang bermasalah --}}
+              <td class="bg-danger text-white">
+                  {{ $item->status->nama_status ?? '' }}
+              </td>
+          @else
+              {{-- Beri warna abu-abu atau biarkan kosong untuk status lainnya --}}
+              <td class="bg-secondary text-white">
+                  {{ $item->status->nama_status ?? '' }}
+              </td>
+          @endif
+          {{-- <td class="">
             {{ $item->status->nama_status ?? '' }}
-            {{-- @switch($item->status)
-              @case(0) Baru @break
-              @case(1) Hilang @break
-              @case(2) Rusak Ringan @break
-              @case(3) Rusak @break
-              @case(4) Diperbarui @break
-            @endswitch --}}
-          </td>
+          </td> --}}
           <td>{{ $item->keterangan ?: '-' }}</td>
           <td class="text-nowrap">
             <div class="d-flex gap-1">
